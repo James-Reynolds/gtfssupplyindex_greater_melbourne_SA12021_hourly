@@ -268,6 +268,11 @@ stops_in_or_near_areas <- gtfssupplyindex:::stops_in_walk_dist(
   verbose = FALSE
 )
 
+```
+
+Hourly SI scores were obtained for all modes across all of Greater Melbourne.
+
+```{r run_for_all_modes_Victoria_231006, eval = FALSE, echo = FALSE}
 
 ####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
 #si_by_area_and_hour_231010 <- hourly(
@@ -302,7 +307,6 @@ stops_in_or_near_areas <- gtfssupplyindex:::stops_in_walk_dist(
 ```
 
 
-
 ```{r Melbourne_231010, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
 
@@ -318,8 +322,6 @@ si_by_area_and_hour_231010_wider %>% select(1, 6:25) %>% head() %>% adorn_roundi
 
 
 ```
-
-
 
 ```{r Melbourne_231014, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
@@ -353,6 +355,112 @@ si_by_area_and_hour_231015_wider <- si_by_area_and_hour_231015 %>% pivot_wider(n
 
 
 ```
+
+
+SI scores were also obtained for each mode separately
+
+```{r run_for_tram_Victoria_231006, eval = FALSE, echo = FALSE}
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231010 <- hourly(
+  
+list_gtfs = ptv_231006_list_gtfs[[1]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-10",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231010, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_tram")
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231014 <- hourly(
+  list_gtfs = ptv_231006_list_gtfs[[1]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-14",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231014, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_tram")
+
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231015 <- hourly(
+  list_gtfs = ptv_231006_list_gtfs[[1]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-15",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231015, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_tram")
+
+
+
+```
+
+
+```{r run_for_rail_Victoria_231006, eval = FALSE, echo = FALSE}
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231010 <- hourly(
+  
+list_gtfs = ptv_231006_list_gtfs[[2]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-10",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231010, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_rail")
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231014 <- hourly(
+  list_gtfs = ptv_231006_list_gtfs[[2]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-14",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231014, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_rail")
+
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231015 <- hourly(
+  list_gtfs = ptv_231006_list_gtfs[[2]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-15",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231015, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_rail")
+
+```
+
+```{r run_for_bus_Victoria_231006, eval = FALSE, echo = FALSE}
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231010 <- hourly(
+  
+list_gtfs = ptv_231006_list_gtfs[[3]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-10",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231010, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_bus")
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231014 <- hourly(
+  list_gtfs = ptv_231006_list_gtfs[[3]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-14",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231014, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_bus")
+
+
+####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
+si_by_area_and_hour_231015 <- hourly(
+  list_gtfs = ptv_231006_list_gtfs[[3]], 
+  stops_in_or_near_areas = stops_in_or_near_areas, 
+  date_ymd = "2023-10-15",
+  verbose = TRUE)
+
+write.csv(si_by_area_and_hour_231015, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_bus")
+
+```
+
 
 
 # Results

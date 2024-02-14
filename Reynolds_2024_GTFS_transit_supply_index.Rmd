@@ -75,7 +75,7 @@ from GTFS datasets
 has recently been developed into
 an R package. Development of that code is reported separately (see @gtfssupplyindex_github).
 
-The next step, therefore, is to output the SI scores for Greater Melbourne and check the results.  This document describes the calculation of the SI scores for SA1 zones in Greater Melbourne for Tuesday July 25th, Saturday 29th and Sunday 30th, 2023.  These dates were selected as they are after universities commence their second semester, clear of public holiday, but also appear to be before strike action in September and October^[Earlier versions of this work calculated scores for dates in early October. On closer inspection it appears that strike action may have resulted in many typical bus services not being provided on Sundays at that time.  
+The next step, therefore, is to output the SI scores for Greater Melbourne and check the results.  This document describes the calculation of the SI scores for SA1 zones in Greater Melbourne for Tuesday July 25th, Saturday 29th and Sunday 30th, 2023.  These dates were selected as they are after universities commence their second semester, clear of public holiday, but also appear to be before strike action in September and October^[Earlier versions of this work calculated scores for dates in early October. On closer inspection it appears that strike action may have resulted in many typical bus services not being provided on Sundays at that time.]  
 
 
 

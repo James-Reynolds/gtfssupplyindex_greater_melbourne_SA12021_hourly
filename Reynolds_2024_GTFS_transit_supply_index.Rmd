@@ -75,7 +75,7 @@ from GTFS datasets
 has recently been developed into
 an R package. Development of that code is reported separately (see @gtfssupplyindex_github).
 
-The next step, therefore, is to output the SI scores for Greater Melbourne and check the results.  This document describes the calculation of the SI scores for SA1 zones in Greater Melbourne for Tuesday 10th, Saturday 14th and Sunday 15th October, 2023, and reviews the results. 
+The next step, therefore, is to output the SI scores for Greater Melbourne and check the results.  This document describes the calculation of the SI scores for SA1 zones in Greater Melbourne for Tuesday July 25th, Saturday 29th and Sunday 30th, 2023.  These dates were selected as they are after universities commence their second semester, clear of public holiday, but also appear to be before strike action in September and October^[Earlier versions of this work calculated scores for dates in early October. On closer inspection it appears that strike action may have resulted in many typical bus services not being provided on Sundays at that time.  
 
 
 
@@ -225,1044 +225,10 @@ The upper table shows first six entries in the 'longer' version of the table. Ea
 
 
 
-# Methodology
-
-In this document hourly SI scores are reported for all SA1 2021 zones within Greater Melbourne. Scores are calculated for Tuesday 10th, Saturday 14th and Sunday 15th October, 2023. These datas are selected so as to match the typical census timing of a Tuesday early in October, although 2023 is not actually a census year.  
-
-GTFS data was obtained from @transitfeeds_victoria:2023aa, with the October 6, 2023 dataset selected.  Some minor adjustments were made to this dataset to remove duplicate stop_ids from the stops.txt file. 
-
-
-```{r fix_ptv_data_Victoria_231006, eval = FALSE, echo = FALSE}
-##-----THIS CHUNK ONLY NEEDS TO BE RUN ONCE TO CREATE THE gtfs_duplicate_stops_removed.zip file-----HENCE eval = FALSE ABOVE
-
-ptv_231006 <- tidytransit::read_gtfs("data/ptv_231006/gtfs.zip")
-# This results in "Warning: Duplicated ids found in: stops The returned object is not a tidygtfs object, you can use as_tidygtfs() after fixing the issue."
-
-#So, remove the duplicated stops 
-#identify duplicate stops
-ptv_231006_duplicated_stops <- tabyl(ptv_231006$stops$stop_id) %>% filter (n>1)
-names(ptv_231006_duplicated_stops) <- c("stop_id", "n", "percent")
-ptv_231006_duplicated_stops <- left_join(ptv_231006_duplicated_stops, ptv_231006$stops)
-
-##discard duplicates
-ptv_231006$stops <- ptv_231006$stops[!duplicated(ptv_231006$stops$stop_id),]
-
-## Write gtfs back to file
-ptv_231006 <- as_tidygtfs(ptv_231006)
-tidytransit::write_gtfs(ptv_231006, "data/ptv_231006/gtfs_duplicate_stops_removed.zip")
-
-
-## convert to list of tidygtfs objects
-ptv_231006_list_gtfs <- gtfssupplyindex::gtfs_by_route_type("data/ptv_231006/gtfs_duplicate_stops_removed.zip")
-
-list_gtfs = ptv_231006_list_gtfs
-
-areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(gcc_name_2021 == "Greater Melbourne") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-buffer_distance <- gtfssupplyindex:::load_buffer_zones()
-
-stops_in_or_near_areas <- gtfssupplyindex:::stops_in_walk_dist(
-  list_gtfs = list_gtfs, 
-  areas_of_interest = areas_of_interest,
-  EPSG_for_transform = 28355,
-  verbose = FALSE
-)
-
-```
-
-Hourly SI scores were obtained for all modes across all of Greater Melbourne.
-
-```{r run_for_all_modes_Victoria_231006, eval = FALSE, echo = FALSE}
-
-####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
-#si_by_area_and_hour_231010 <- hourly(
-#  list_gtfs = list_gtfs, 
-#  stops_in_or_near_areas = stops_in_or_near_areas, 
-#  date_ymd = "2023-10-10",
-#  verbose = TRUE)
-
-#write.csv(si_by_area_and_hour_231010, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231010")
-
-####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
-#si_by_area_and_hour_231014 <- hourly(
-#  list_gtfs = list_gtfs, 
-#  stops_in_or_near_areas = stops_in_or_near_areas, 
-#  date_ymd = "2023-10-14",
-#  verbose = TRUE)
-
-#write.csv(si_by_area_and_hour_231014, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231014")
-
-
-####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
-#si_by_area_and_hour_231015 <- hourly(
-#  list_gtfs = list_gtfs, 
-#  stops_in_or_near_areas = stops_in_or_near_areas, 
-#  date_ymd = "2023-10-15",
-#  verbose = TRUE)
-
-#write.csv(si_by_area_and_hour_231015, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231015")
-
-
-
-```
-
-
-```{r Melbourne_231010, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231010 <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231010")
-si_by_area_and_hour_231010 <- si_by_area_and_hour_231010[,2:4]
-si_by_area_and_hour_231010$area_id <- as.character(si_by_area_and_hour_231010$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231010_wider <- si_by_area_and_hour_231010 %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-si_by_area_and_hour_231010_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 6 SA1 zones, 4am to 11pm only" )
-
-
-```
-
-```{r Melbourne_231014, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231014 <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231014")
-si_by_area_and_hour_231014 <- si_by_area_and_hour_231014[,2:4]
-si_by_area_and_hour_231014$area_id <- as.character(si_by_area_and_hour_231014$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231014_wider <- si_by_area_and_hour_231014 %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-##Skip printing table
-#si_by_area_and_hour_231014_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-
-
-```
-
-
-```{r Melbourne_231015, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231015 <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231015")
-si_by_area_and_hour_231015 <- si_by_area_and_hour_231015[,2:4]
-si_by_area_and_hour_231015$area_id <- as.character(si_by_area_and_hour_231015$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231015_wider <- si_by_area_and_hour_231015 %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-## Skip table
-#si_by_area_and_hour_231015_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-
-
-```
-
-
-SI scores were also obtained for each mode separately.
-
-```{r run_for_tram_Victoria_231006, eval = FALSE, echo = FALSE}
-
-### eval = FALSE so this chunk will not run
-si_by_area_and_hour_231010 <- hourly(
-  
-list_gtfs = ptv_231006_list_gtfs[[1]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-10",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231010, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_tram")
-
-
-si_by_area_and_hour_231014 <- hourly(
-  list_gtfs = ptv_231006_list_gtfs[[1]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-14",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231014, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_tram")
-
-
-si_by_area_and_hour_231015 <- hourly(
-  list_gtfs = ptv_231006_list_gtfs[[1]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-15",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231015, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_tram")
-```
-
-
-
-```{r Melbourne_231010_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231010_tram <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_tram")
-si_by_area_and_hour_231010_tram <- si_by_area_and_hour_231010_tram[,2:4]
-si_by_area_and_hour_231010_tram$area_id <- as.character(si_by_area_and_hour_231010_tram$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231010_tram_wider <- si_by_area_and_hour_231010_tram %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-si_by_area_and_hour_231010_tram_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, tram only, first 6 SA1 zones, 6am to 11pm only" )
-
-
-```
-
-```{r Melbourne_231014_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231014_tram <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_tram")
-si_by_area_and_hour_231014_tram <- si_by_area_and_hour_231014_tram[,2:4]
-si_by_area_and_hour_231014_tram$area_id <- as.character(si_by_area_and_hour_231014_tram$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231014_tram_wider <- si_by_area_and_hour_231014_tram %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-##Skip printing table
-#si_by_area_and_hour_231014_tram_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-
-
-```
-
-
-```{r Melbourne_231015_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231015_tram <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_tram")
-si_by_area_and_hour_231015_tram <- si_by_area_and_hour_231015_tram[,2:4]
-si_by_area_and_hour_231015_tram$area_id <- as.character(si_by_area_and_hour_231015_tram$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231015_tram_wider <- si_by_area_and_hour_231015_tram %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-## Skip table
-#si_by_area_and_hour_231015_tram_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-```
-
-
-```{r run_for_rail_Victoria_231006, eval = FALSE, echo = FALSE}
-
-#### eval = FALSE so this chunk will not run
-si_by_area_and_hour_231010 <- hourly(
-  
-list_gtfs = ptv_231006_list_gtfs[[2]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-10",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231010, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_rail")
-
-####COMMENT OUT CALCULATION AND SAVE TO FILE, SO IT DOES NOT RUN WHILE KNITTING RMARKDOWN
-si_by_area_and_hour_231014 <- hourly(
-  list_gtfs = ptv_231006_list_gtfs[[2]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-14",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231014, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_rail")
-
-si_by_area_and_hour_231015 <- hourly(
-  list_gtfs = ptv_231006_list_gtfs[[2]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-15",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231015, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_rail")
-
-```
-
-
-
-```{r Melbourne_231010_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231010_rail <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_rail")
-si_by_area_and_hour_231010_rail <- si_by_area_and_hour_231010_rail[,2:4]
-si_by_area_and_hour_231010_rail$area_id <- as.character(si_by_area_and_hour_231010_rail$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231010_rail_wider <- si_by_area_and_hour_231010_rail %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-si_by_area_and_hour_231010_rail_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, rail only, first 6 SA1 zones, 6am to 11pm only" )
-
-
-```
-
-```{r Melbourne_231014_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231014_rail <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_rail")
-si_by_area_and_hour_231014_rail <- si_by_area_and_hour_231014_rail[,2:4]
-si_by_area_and_hour_231014_rail$area_id <- as.character(si_by_area_and_hour_231014_rail$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231014_rail_wider <- si_by_area_and_hour_231014_rail %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-##Skip printing table
-#si_by_area_and_hour_231014_rail_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-
-
-```
-
-
-```{r Melbourne_231015_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231015_rail <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_rail")
-si_by_area_and_hour_231015_rail <- si_by_area_and_hour_231015_rail[,2:4]
-si_by_area_and_hour_231015_rail$area_id <- as.character(si_by_area_and_hour_231015_rail$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231015_rail_wider <- si_by_area_and_hour_231015_rail %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-## Skip table
-#si_by_area_and_hour_231015_rail_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-```
-
-
-```{r run_for_bus_Victoria_231006, eval = FALSE, echo = FALSE}
-
-### eval = FALSE so this chunk will not run
-si_by_area_and_hour_231010 <- hourly(
-  
-list_gtfs = ptv_231006_list_gtfs[[3]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-10",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231010, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_bus")
-
-si_by_area_and_hour_231014 <- hourly(
-  list_gtfs = ptv_231006_list_gtfs[[3]], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2023-10-14",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231014, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_bus")
-
-si_by_area_and_hour_231015 <- hourly(
-  list_gtfs = ptv_231006_list_gtfs[[3]], 
-  stops_in_or_near_areas = stops_in_or_near_areas[[3]], 
-  date_ymd = "2023-10-15",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_231015, "results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_bus")
-
-```
-
-
-
-```{r Melbourne_231010_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231010_bus <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231010_bus")
-si_by_area_and_hour_231010_bus <- si_by_area_and_hour_231010_bus[,2:4]
-si_by_area_and_hour_231010_bus$area_id <- as.character(si_by_area_and_hour_231010_bus$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231010_bus_wider <- si_by_area_and_hour_231010_bus %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-si_by_area_and_hour_231010_bus_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, bus only, first 6 SA1 zones, 6am to 11pm only" )
-
-
-```
-
-```{r Melbourne_231014_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231014_bus <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231014_bus")
-si_by_area_and_hour_231014_bus <- si_by_area_and_hour_231014_bus[,2:4]
-si_by_area_and_hour_231014_bus$area_id <- as.character(si_by_area_and_hour_231014_bus$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231014_bus_wider <- si_by_area_and_hour_231014_bus %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-##Skip printing table
-#si_by_area_and_hour_231014_bus_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-
-
-```
-
-
-```{r Melbourne_231015_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_231015_bus <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_231015_bus")
-si_by_area_and_hour_231015_bus <- si_by_area_and_hour_231015_bus[,2:4]
-si_by_area_and_hour_231015_bus$area_id <- as.character(si_by_area_and_hour_231015_bus$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_231015_bus_wider <- si_by_area_and_hour_231015_bus %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-## Skip table
-#si_by_area_and_hour_231015_bus_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
-```
-
-# Results - October 2023
-
-Results are saved in a csv file format together with the other documentation of this project^[See https://github.com/James-Reynolds/gtfssupplyindex_greater_melbourne_SA12021_hourly]
-
-These files contain a large amount of data, as there are a lot of SA1 zones within Greater Melbourne. Hence, only selected results are presented in the following sections to demonstrate the calculated scores.
-
-## All modes
-### Lang Lang
-
-Lang Lang is a small township in the south-east of the Greater Melbourne area, on the way to Phillip Island. The SA1 zone boundaries in the vicinity of the township are shown in the below figure.  
-
-
-```{r Lang_lang, fig.width = 10, fig.height = 2, fig.margin = FALSE, fig.cap = "SA1 zone boundaries in Lang Lang", echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, out.width='100%'}
-knitr::include_graphics("graphics/lang_lang_sa1.png")
-
-```
-
-SI score results for SA1 21201154812 are shown in the following tables:
-```{r Lang_lang_results, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-si_by_area_and_hour_231010_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 10, 2023, 6am to 11pm only" )
-
-
-si_by_area_and_hour_231014_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 14, 2023, 6am to 11pm only" )
-
-
-
-si_by_area_and_hour_231015_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 15, 2023, 6am to 11pm only" )
-
-```
-
-This appears to largely align with the timetable^[https://www.vline.com.au/getattachment/44615b59-182d-456a-a25d-57b25de3d88b/Yarram-Melbourne-(via-Leongatha-Koo-Wee-Rup)] and meets expectations.  
-
-### Melbourne CBD - North
-Looking next Melbourne CBDm, SA1 and SA2 zone boundaries for the Melbourne CBD - North SA2 zone are shown below. 
-
-```{r Melbourne_cbd_north_sa2, fig.width = 10, fig.height = 2, fig.fullwidth = TRUE, fig.cap = "SA1 zone boundaries within the Melbourne CBD - North SA2, Source: ABS ", echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, out.width='100%'}
-knitr::include_graphics("graphics/Melbourne_cbd_north_sa2.png")
-
-```
-
-
-```{r Melbourne_CBD_north_all_map_231010, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231010 <- inner_join(map_areas_of_interest, si_by_area_and_hour_231010)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231010$hour_starting <- hm(map_si_by_area_and_hour_231010$hour_starting)
-map_si_by_area_and_hour_231010$hour_starting <- hour(map_si_by_area_and_hour_231010$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231010 %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-```
-
-This appears to meet expectations, with peaks in the SI scores in morning and evening.  SI scores also appear to be larger for zones closer to Melbourne Central station (south end of SA2 zone).
-
-
-
-```{r Melbourne_CBD_north_all_map_231014, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday 14th October 2023, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231014 <- inner_join(map_areas_of_interest, si_by_area_and_hour_231014)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231014$hour_starting <- hm(map_si_by_area_and_hour_231014$hour_starting)
-map_si_by_area_and_hour_231014$hour_starting <- hour(map_si_by_area_and_hour_231014$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231014 %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-```
-These results generally meet expectations.  SI scores are in the order of half of the Tuesday scores, reflecting the lower service levels on Saturdays.  
-
-
-```{r Melbourne_CBD_north_all_map_231015, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231015 <- inner_join(map_areas_of_interest, si_by_area_and_hour_231015)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231015$hour_starting <- hm(map_si_by_area_and_hour_231015$hour_starting)
-map_si_by_area_and_hour_231015$hour_starting <- hour(map_si_by_area_and_hour_231015$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231015 %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-
-These results appear to meet expectations, with SI scores for the Sunday a relatively small amount lower than the Saturday scores
-
-### Clayton
-
-The following shows calculated SI values for SA1 zones within the Clayton (North) - Notting Hill SA2 zone.  
-
-```{r Clayton_campus_all_map_231010, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 10, 2023, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231010 <- inner_join(map_areas_of_interest, si_by_area_and_hour_231010)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231010$hour_starting <- hm(map_si_by_area_and_hour_231010$hour_starting)
-map_si_by_area_and_hour_231010$hour_starting <- hour(map_si_by_area_and_hour_231010$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231010 %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-These results appear to largely match expectations.  SI values are much lower than in the Melbourne CBD. The highest SI scores are generally in the SA1 zones that are closest to the bus interchange at Monash University (south-west area of the SA2 area). 
-
-
-
-## Tram
-### Lang Lang
-
-There are no trams in Lang Lang.  Hence, extracting SI score results for SA1 21201154812 for just the trams results in no data:
-
-```{r Lang_lang_results_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-si_by_area_and_hour_231010_tram_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 10, 2023, 6am to 11pm only" )
-
-
-```
-
-### Melbourne CBD - North
-Looking next at the Melbourne CBD:
-
-```{r Melbourne_CBD_north_all_map_231010_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, tram only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231010_tram <- inner_join(map_areas_of_interest, si_by_area_and_hour_231010_tram)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231010_tram$hour_starting <- hm(map_si_by_area_and_hour_231010_tram$hour_starting)
-map_si_by_area_and_hour_231010_tram$hour_starting <- hour(map_si_by_area_and_hour_231010_tram$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231010_tram %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-si_by_area_and_hour_231010_tram_wider %>% filter(area_id == "20604150424") %>% select(1, 6:22)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 10, 2023, 6am to 11pm only" )
-
-
-```
-
-This appears to meet expectations, with peaks in the SI scores in morning and evening.  SI scores also appear to be larger for zones closer to the Swanston Street corridor
-
-
-
-```{r Melbourne_CBD_north_all_map_231014_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday 14th October 2023, tram only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231014_tram <- inner_join(map_areas_of_interest, si_by_area_and_hour_231014_tram)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231014_tram$hour_starting <- hm(map_si_by_area_and_hour_231014_tram$hour_starting)
-map_si_by_area_and_hour_231014_tram$hour_starting <- hour(map_si_by_area_and_hour_231014_tram$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231014_tram %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-si_by_area_and_hour_231014_tram_wider %>% filter(area_id == "20604150424") %>% select(1, 6:22)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 14, 2023, 6am to 11pm only" )
-
-
-```
-These results generally meet expectations.  SI scores are in the order of 2/3rds of the Tuesday scores, reflecting the lower service levels on Saturdays.  
-
-
-```{r Melbourne_CBD_north_all_map_231015_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, tram only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231015_tram <- inner_join(map_areas_of_interest, si_by_area_and_hour_231015_tram)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231015_tram$hour_starting <- hm(map_si_by_area_and_hour_231015_tram$hour_starting)
-map_si_by_area_and_hour_231015_tram$hour_starting <- hour(map_si_by_area_and_hour_231015_tram$hour_starting)
-
-#plot only 5am to 1am
-#ggplot() + 
-#  geom_sf(data=map_si_by_area_and_hour_231015_tram %>% filter(hour_starting %in% (5:24)),
-#          aes(fill = SI)) +
-#            facet_wrap(vars(hour_starting)) +
-#  theme(axis.text.x=element_blank(), #remove x axis labels
-#        axis.ticks.x=element_blank(), #remove x axis ticks
-#        axis.text.y=element_blank(),  #remove y axis labels
-#       axis.ticks.y=element_blank()  #remove y axis ticks
-#  )
-
-si_by_area_and_hour_231015_tram_wider %>% filter(area_id == "20604150424") %>% select(1, 6:22)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 15, 2023, 6am to 11pm only" )
-
-
-```
-
-These results appear to meet expectations, with SI scores for the Sunday a relatively small amount lower than the Saturday scores
-
-
-
-
-## Rail
-### Lang Lang
-
-There are no rail services in Lang Lang.  Hence, extracting SI score results for SA1 21201154812 for just the rails results in no data:
-```{r Lang_lang_results_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-si_by_area_and_hour_231010_rail_wider %>% filter(area_id == "21201154812") %>% select(1, 5:21)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 10, 2023, 6am to 11pm only" )
-
-
-```
-
-### Melbourne CBD - North
-Looking next Melbourne CBD:
-
-```{r Melbourne_CBD_north_all_map_231010_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, rail only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231010_rail <- inner_join(map_areas_of_interest, si_by_area_and_hour_231010_rail)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231010_rail$hour_starting <- hm(map_si_by_area_and_hour_231010_rail$hour_starting)
-map_si_by_area_and_hour_231010_rail$hour_starting <- hour(map_si_by_area_and_hour_231010_rail$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231010_rail %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-si_by_area_and_hour_231010_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 9:25)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 10, 2023, 6am to 11pm only" )
-
-
-```
-
-This appears to meet expectations, with peaks in the SI scores in morning and evening.  SI scores also appear to be larger for zones closer to Melbourne Central and Flagstaff.  
-
-
-
-```{r Melbourne_CBD_north_all_map_231014_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday 14th October 2023, rail only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231014_rail <- inner_join(map_areas_of_interest, si_by_area_and_hour_231014_rail)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231014_rail$hour_starting <- hm(map_si_by_area_and_hour_231014_rail$hour_starting)
-map_si_by_area_and_hour_231014_rail$hour_starting <- hour(map_si_by_area_and_hour_231014_rail$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231014_rail %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-si_by_area_and_hour_231014_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 5:22)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 14, 2023, 6am to 11pm only" )
-
-
-```
-These results generally meet expectations.  SI scores are in the order of half of the Tuesday scores, reflecting the lower service levels on Saturdays.  
-
-
-```{r Melbourne_CBD_north_all_map_231015_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, rail only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231015_rail <- inner_join(map_areas_of_interest, si_by_area_and_hour_231015_rail)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231015_rail$hour_starting <- hm(map_si_by_area_and_hour_231015_rail$hour_starting)
-map_si_by_area_and_hour_231015_rail$hour_starting <- hour(map_si_by_area_and_hour_231015_rail$hour_starting)
-
-#plot only 5am to 1am
-#ggplot() + 
-#  geom_sf(data=map_si_by_area_and_hour_231015_rail %>% filter(hour_starting %in% (5:24)),
-#          aes(fill = SI)) +
-#            facet_wrap(vars(hour_starting)) +
-#  theme(axis.text.x=element_blank(), #remove x axis labels
-#        axis.ticks.x=element_blank(), #remove x axis ticks
-#        axis.text.y=element_blank(),  #remove y axis labels
-#       axis.ticks.y=element_blank()  #remove y axis ticks
-#  )
-
-si_by_area_and_hour_231015_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 5:21)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 15, 2023, 6am to 11pm only" )
-
-
-```
-
-These results appear to meet expectations, with SI scores for the Sunday similar to the Saturday scores
-
-
-
-## Bus
-### Lang Lang
-
-Extracting SI score results for SA1 21201154812 for just the buss results in:
-```{r Lang_lang_results_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
-
-si_by_area_and_hour_231010_bus_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 10, 2023, 6am to 11pm only" )
-
-
-```
-
-This matches the pattern that was found when testing the gtfssupplyindex package, with a small amount of service throughout the day. 
-
-
-### Clayton
-
-The following shows calculated SI values for SA1 zones within the Clayton (North) - Notting Hill SA2 zone.  
-
-```{r Clayton_campus_all_map_231010_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 10, 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231010_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_231010_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231010_bus$hour_starting <- hm(map_si_by_area_and_hour_231010_bus$hour_starting)
-map_si_by_area_and_hour_231010_bus$hour_starting <- hour(map_si_by_area_and_hour_231010_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231010_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-These results appear to largely match expectations. The highest SI scores are generally in the SA1 zones that are closest to the bus interchange at Monash University (south-west area of the SA2 area). 
-
-
-```{r Clayton_campus_all_map_231014_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 14, 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231014_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_231014_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231014_bus$hour_starting <- hm(map_si_by_area_and_hour_231014_bus$hour_starting)
-map_si_by_area_and_hour_231014_bus$hour_starting <- hour(map_si_by_area_and_hour_231014_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231014_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-The Saturday scores meet expectations, being in the order of half those of Tuesday and following a similar geographic pattern. 
-
-
-```{r Clayton_campus_all_map_231015_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 15, 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231015_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_231015_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231015_bus$hour_starting <- hm(map_si_by_area_and_hour_231015_bus$hour_starting)
-map_si_by_area_and_hour_231015_bus$hour_starting <- hour(map_si_by_area_and_hour_231015_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231015_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-
-The Sunday scores scores are slightly lower than for Saturday, which is consistent with expectations.  
-
-
-
-### Melbourne CBD - North
-Looking next Melbourne CBD:
-
-```{r Melbourne_CBD_north_all_map_231010_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231010_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_231010_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231010_bus$hour_starting <- hm(map_si_by_area_and_hour_231010_bus$hour_starting)
-map_si_by_area_and_hour_231010_bus$hour_starting <- hour(map_si_by_area_and_hour_231010_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231010_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-si_by_area_and_hour_231010_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 10, 2023, 6am to 11pm only" )
-
-
-```
-
-This appears to meet expectations, with peaks in the SI scores in morning and evening.  SI scores also appear to be larger for zones closer to the Queen and Lonsdale Street corridors
-
-
-
-```{r Melbourne_CBD_north_all_map_231014_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday 14th October 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231014_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_231014_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231014_bus$hour_starting <- hm(map_si_by_area_and_hour_231014_bus$hour_starting)
-map_si_by_area_and_hour_231014_bus$hour_starting <- hour(map_si_by_area_and_hour_231014_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231014_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-si_by_area_and_hour_231014_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 14, 2023, 6am to 11pm only" )
-
-
-```
-These results generally meet expectations.  SI scores are in the order of half of the Tuesday scores, reflecting the lower service levels on Saturdays.  
-
-
-```{r Melbourne_CBD_north_all_map_231015_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_231015_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_231015_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_231015_bus$hour_starting <- hm(map_si_by_area_and_hour_231015_bus$hour_starting)
-map_si_by_area_and_hour_231015_bus$hour_starting <- hour(map_si_by_area_and_hour_231015_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_231015_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-      axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-       axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-si_by_area_and_hour_231015_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 15, 2023, 6am to 11pm only" )
-
-
-```
-
-These results DO NOT meet expectations. The scores are much lower, being less than 5 percent of the Saturday scores.  Is this an error in the calculations? 
-
-Sunday bus services in the CBD are generally much less frequent than any other time in the week, but this appears to be too much of a difference.  
-
-There were some strike actions by bus drivers around this time, which might account for dramatic reductions in the timetabled services.  However, these results still surprise me, so it will be worth investigating further by looking at some other Sunday. 
-
-### Melbourne CBD North, January 14, 2024
-
-Looking at the north of the Melbourne CBD, but for a different Sunday, gives the following output:
-
-```{r fix_ptv_data_Victoria_231228_and_run_bus, eval = FALSE, echo = FALSE}
-##-----THIS CHUNK ONLY NEEDS TO BE RUN ONCE TO CREATE THE gtfs_duplicate_stops_removed.zip file-----HENCE eval = FALSE ABOVE
-
-ptv_231228 <- tidytransit::read_gtfs("data/ptv_231228/gtfs.zip")
-# This results in "Warning: Duplicated ids found in: stops The returned object is not a tidygtfs object, you can use as_tidygtfs() after fixing the issue."
-
-#So, remove the duplicated stops 
-#identify duplicate stops
-ptv_231228_duplicated_stops <- tabyl(ptv_231228$stops$stop_id) %>% filter (n>1)
-names(ptv_231228_duplicated_stops) <- c("stop_id", "n", "percent")
-ptv_231228_duplicated_stops <- left_join(ptv_231228_duplicated_stops, ptv_231228$stops)
-
-##discard duplicates
-ptv_231228$stops <- ptv_231228$stops[!duplicated(ptv_231228$stops$stop_id),]
-
-## Write gtfs back to file
-ptv_231228 <- as_tidygtfs(ptv_231228)
-tidytransit::write_gtfs(ptv_231228, "data/ptv_231228/gtfs_duplicate_stops_removed.zip")
-
-
-## convert to list of tidygtfs objects
-ptv_231228_list_gtfs <- gtfssupplyindex::gtfs_by_route_type("data/ptv_231228/gtfs_duplicate_stops_removed.zip")
-
-list_gtfs = ptv_231228_list_gtfs
-
-areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(gcc_name_2021 == "Greater Melbourne") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-buffer_distance <- gtfssupplyindex:::load_buffer_zones()
-
-stops_in_or_near_areas <- gtfssupplyindex:::stops_in_walk_dist(
-  list_gtfs = list_gtfs[3], 
-  areas_of_interest = areas_of_interest,
-  EPSG_for_transform = 28355,
-  verbose = FALSE
-)
-
-
-si_by_area_and_hour_240114 <- hourly(
-  list_gtfs = ptv_231228_list_gtfs[3], 
-  stops_in_or_near_areas = stops_in_or_near_areas, 
-  date_ymd = "2024-01-14",
-  verbose = TRUE)
-
-write.csv(si_by_area_and_hour_240114, "results/Greater_Melbourne/si_by_SA12021area_and_hour_240114_bus")
-
-```
-
-
-```{r Melbourne_240204_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE,  fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 14th January, 2024, bus only, by hour between 5am and 1am"}
-
-###Load results from CSV (Precalculated above) and make first column character
-si_by_area_and_hour_240114_bus <- read.csv("results/Greater_Melbourne/si_by_SA12021area_and_hour_240114_bus")
-si_by_area_and_hour_240114_bus <- si_by_area_and_hour_240114_bus[,2:4]
-si_by_area_and_hour_240114_bus$area_id <- as.character(si_by_area_and_hour_240114_bus$area_id)
-
-#pivot to wider for display as table
-si_by_area_and_hour_240114_bus_wider <- si_by_area_and_hour_240114_bus %>% pivot_wider(names_from = hour_starting, values_from = SI)
-
-
-si_by_area_and_hour_240114_bus_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for January 14, 2024, first 6 SA1 zones, 6am to 11pm only" )
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_240114_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_240114_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_240114_bus$hour_starting <- hm(map_si_by_area_and_hour_240114_bus$hour_starting)
-map_si_by_area_and_hour_240114_bus$hour_starting <- hour(map_si_by_area_and_hour_240114_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_240114_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-      axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-       axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-si_by_area_and_hour_240114_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for January 14, 2024, 6am to 11pm only" )
-
-```
-
-These results appear to better match expectations than the results for 15 October, 2023.  Here the SI scores are generally around 4/5ths of the scores from Saturday 14th October, 2023.  This suggests that it would be appropriate to rerun the analysis, but for a different week. 
-
-
 
 # Methodology - July 2023
 
-Here the July 14th 2023 feed was again used. SI results were calculated for July  25th, 29th and 30th, 2024.  These dates were selected as they are after universities commence their second semester, clear of public holiday, but also appear to be before strike action in September and October
+Here the July 14th 2023 feed was used. SI results were calculated for July  25th, 29th and 30th, 2023.  These dates were selected as they are after universities commence their second semester, clear of public holiday, but also appear to be before strike action in September and October
 
 
 ```{r load_ptv_data_Victoria_230714, eval = FALSE, echo = FALSE}
@@ -1349,7 +315,7 @@ si_by_area_and_hour_230725$area_id <- as.character(si_by_area_and_hour_230725$ar
 #pivot to wider for display as table
 si_by_area_and_hour_230725_wider <- si_by_area_and_hour_230725 %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-si_by_area_and_hour_230725_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for March 19, 2024, first 6 SA1 zones, 6am to 11pm only" )
+si_by_area_and_hour_230725_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 25, 2023, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1364,8 +330,8 @@ si_by_area_and_hour_230729$area_id <- as.character(si_by_area_and_hour_230729$ar
 #pivot to wider for display as table
 si_by_area_and_hour_230729_wider <- si_by_area_and_hour_230729 %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-##Skip printing table
-#si_by_area_and_hour_230729_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230729_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 29, 2023, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1381,8 +347,8 @@ si_by_area_and_hour_230730$area_id <- as.character(si_by_area_and_hour_230730$ar
 #pivot to wider for display as table
 si_by_area_and_hour_230730_wider <- si_by_area_and_hour_230730 %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-## Skip table
-#si_by_area_and_hour_230730_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230730_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 30, 2023, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1435,7 +401,7 @@ si_by_area_and_hour_230725_tram$area_id <- as.character(si_by_area_and_hour_2307
 #pivot to wider for display as table
 si_by_area_and_hour_230725_tram_wider <- si_by_area_and_hour_230725_tram %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-si_by_area_and_hour_230725_tram_wider %>% select(1, 6:25) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, tram only, first 6 SA1 zones, 4am to 11pm only" )
+si_by_area_and_hour_230725_tram_wider %>% select(1, 5:21) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 25, 2023, tram only, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1450,8 +416,8 @@ si_by_area_and_hour_230729_tram$area_id <- as.character(si_by_area_and_hour_2307
 #pivot to wider for display as table
 si_by_area_and_hour_230729_tram_wider <- si_by_area_and_hour_230729_tram %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-##Skip printing table
-#si_by_area_and_hour_230729_tram_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230729_tram_wider %>% select(1, 5:21) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 29, 2023, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1467,8 +433,8 @@ si_by_area_and_hour_230730_tram$area_id <- as.character(si_by_area_and_hour_2307
 #pivot to wider for display as table
 si_by_area_and_hour_230730_tram_wider <- si_by_area_and_hour_230730_tram %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-## Skip table
-#si_by_area_and_hour_230730_tram_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230730_tram_wider %>% select(1, 5:21) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 30, 2023, first 6 SA1 zones, 6am to 11pm only" )
 ```
 
 ## Rail
@@ -1515,7 +481,7 @@ si_by_area_and_hour_230725_rail$area_id <- as.character(si_by_area_and_hour_2307
 #pivot to wider for display as table
 si_by_area_and_hour_230725_rail_wider <- si_by_area_and_hour_230725_rail %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-si_by_area_and_hour_230725_rail_wider %>% select(1, 6:25) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, rail only, first 6 SA1 zones, 4am to 11pm only" )
+si_by_area_and_hour_230725_rail_wider %>% select(1, 5:21) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 25, 2023, rail only, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1530,8 +496,8 @@ si_by_area_and_hour_230729_rail$area_id <- as.character(si_by_area_and_hour_2307
 #pivot to wider for display as table
 si_by_area_and_hour_230729_rail_wider <- si_by_area_and_hour_230729_rail %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-##Skip printing table
-#si_by_area_and_hour_230729_rail_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230729_rail_wider %>% select(1, 5:21) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 29, 2023, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1547,8 +513,8 @@ si_by_area_and_hour_230730_rail$area_id <- as.character(si_by_area_and_hour_2307
 #pivot to wider for display as table
 si_by_area_and_hour_230730_rail_wider <- si_by_area_and_hour_230730_rail %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-## Skip table
-#si_by_area_and_hour_230730_rail_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230730_rail_wider %>% select(1, 5:21) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 30, 2023, first 6 SA1 zones, 6am to 11pm only" )
 ```
 
 ## Bus
@@ -1595,7 +561,7 @@ si_by_area_and_hour_230725_bus$area_id <- as.character(si_by_area_and_hour_23072
 #pivot to wider for display as table
 si_by_area_and_hour_230725_bus_wider <- si_by_area_and_hour_230725_bus %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-si_by_area_and_hour_230725_bus_wider %>% select(1, 6:25) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, bus only, first 6 SA1 zones, 4am to 11pm only" )
+si_by_area_and_hour_230725_bus_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 25, 2023, bus only, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1610,8 +576,8 @@ si_by_area_and_hour_230729_bus$area_id <- as.character(si_by_area_and_hour_23072
 #pivot to wider for display as table
 si_by_area_and_hour_230729_bus_wider <- si_by_area_and_hour_230729_bus %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-##Skip printing table
-#si_by_area_and_hour_230729_bus_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230729_bus_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 29, 2023, first 6 SA1 zones, 6am to 11pm only" )
 
 
 ```
@@ -1627,11 +593,11 @@ si_by_area_and_hour_230730_bus$area_id <- as.character(si_by_area_and_hour_23073
 #pivot to wider for display as table
 si_by_area_and_hour_230730_bus_wider <- si_by_area_and_hour_230730_bus %>% pivot_wider(names_from = hour_starting, values_from = SI)
 
-## Skip table
-#si_by_area_and_hour_230730_bus_wider %>% select(1, 8:24) %>% head(n=75) %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for October 10, 2023, first 75 SA1 zones, 4am to 2am only" )
+
+si_by_area_and_hour_230730_bus_wider %>% select(1, 8:24) %>% head() %>% adorn_rounding(digits = 0) %>% kable(caption = "Victorian GTFS and SA1 zones within the Greater Melbourne GCCSA, hourly SI values for July 30, 2023, first 6 SA1 zones, 6am to 11pm only" )
 ```
 
-# Results - October 2023
+# Results - July 2023
 
 Results are saved in a csv file format together with the other documentation of this project^[See https://github.com/James-Reynolds/gtfssupplyindex_greater_melbourne_SA12021_hourly]
 
@@ -1641,16 +607,17 @@ These files contain a large amount of data, as there are a lot of SA1 zones with
 ### Lang Lang
 
 SI score results for SA1 21201154812 in Lang Lang are shown in the following tables:
+
 ```{r Lang_lang_results_2, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
-si_by_area_and_hour_230725_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 10, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230725_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 25, 2023, 6am to 11pm only" )
 
 
-si_by_area_and_hour_230729_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 14, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230729_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 29, 2023, 6am to 11pm only" )
 
 
 
-si_by_area_and_hour_230730_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 15, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230730_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 30, 2023, 6am to 11pm only" )
 
 ```
 
@@ -1658,7 +625,7 @@ This appears to largely align with the timetable^[https://www.vline.com.au/getat
 
 ### Melbourne CBD - North
 
-```{r Melbourne_CBD_north_all_map_230725, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230725, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for July 25, 2023, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1686,7 +653,7 @@ This appears to meet expectations, with peaks in the SI scores in morning and ev
 
 
 
-```{r Melbourne_CBD_north_all_map_230729, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday 14th October 2023, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230729, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday July 29th 2023, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1712,7 +679,7 @@ ggplot() +
 These results generally meet expectations.  SI scores are in the order of half of the Tuesday scores, reflecting the lower service levels on Saturdays.  
 
 
-```{r Melbourne_CBD_north_all_map_230730, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230730, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday July 30th 2023, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1739,11 +706,97 @@ ggplot() +
 
 These results appear to meet expectations, with SI scores for the Sunday a relatively small amount lower than the Saturday scores
 
+
+### Caulfield
+
+The following shows calculated SI values for SA1 zones within the Caulfield - North SA2 zone, which includes the Caulfield campus of Monash Uni in the North East (close to Caulfield station), and zones close to Malvern Station (north of SA2 zone). 
+
+```{r Caulfield_campus_all_map_230725, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - NOrth SA2 zone, SI values for July 25th, 2023, by hour between 5am and 1am"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230725 <- inner_join(map_areas_of_interest, si_by_area_and_hour_230725)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230725$hour_starting <- hm(map_si_by_area_and_hour_230725$hour_starting)
+map_si_by_area_and_hour_230725$hour_starting <- hour(map_si_by_area_and_hour_230725$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230725 %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Scores meet expectations, with higher scores closer to the railway stations and along tram routes along Balaclava Road (centre of SA2 zone)  
+
+```{r Caulfield_campus_all_map_230729, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - North SA2 zone, SI values for July 29, 2023, by hour between 5am and 1am"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230729 <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230729$hour_starting <- hm(map_si_by_area_and_hour_230729$hour_starting)
+map_si_by_area_and_hour_230729$hour_starting <- hour(map_si_by_area_and_hour_230729$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230729 %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Again, the Saturday scores are lower than for the weekday, although not to the same extent as in the CBD. This meets expectations. 
+
+```{r Caulfield_campus_all_map_230730, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield SA2 zone, SI values for July 30, 2023, by hour between 5am and 1am"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230730 <- inner_join(map_areas_of_interest, si_by_area_and_hour_230730)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230730$hour_starting <- hm(map_si_by_area_and_hour_230730$hour_starting)
+map_si_by_area_and_hour_230730$hour_starting <- hour(map_si_by_area_and_hour_230730$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730 %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Again, the Sunday sccores are similar to the Saturday scores, but lower in the early morngin and late evening.  This meets expectations. 
+
 ### Clayton
 
 The following shows calculated SI values for SA1 zones within the Clayton (North) - Notting Hill SA2 zone.  
 
-```{r Clayton_campus_all_map_230725, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 10, 2023, by hour between 5am and 1am"}
+```{r Clayton_campus_all_map_230725, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for July 25, 2023, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1770,9 +823,34 @@ ggplot() +
 These results appear to largely match expectations.  SI values are much lower than in the Melbourne CBD. The highest SI scores are generally in the SA1 zones that are closest to the bus interchange at Monash University (south-west area of the SA2 area). 
 
 
-The following shows calculated SI values for SA1 zones within the Clayton (North) - Notting Hill SA2 zone for Saturday March 23, 2024
+```{r Clayton_campus_all_map_230729, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for July 29, 2023, by hour between 5am and 1am"}
 
-```{r Clayton_campus_all_map_230723, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 10, 2023, by hour between 5am and 1am"}
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230729 <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230729$hour_starting <- hm(map_si_by_area_and_hour_230729$hour_starting)
+map_si_by_area_and_hour_230729$hour_starting <- hour(map_si_by_area_and_hour_230729$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230729 %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Saturday scores are roughly half those of teh weekday.  This meets expectations, given that there is little service to/from the university campus on weekends.  
+
+```{r Clayton_campus_all_map_230730, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for July 30, 2023, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1797,14 +875,18 @@ ggplot() +
 
 ```
 
+Again, Sunday scores are slightly lower than Saturday scores, which meets expectations. 
+
+
 ## Tram
-### Lang Lang
+Looking at the scores for trams only:
 
 
 ### Melbourne CBD - North
-Looking next at the Melbourne CBD:
 
-```{r Melbourne_CBD_north_all_map_230725_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, tram only, by hour between 5am and 1am"}
+
+
+```{r Melbourne_CBD_north_all_map_230725_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for July 25, 2023, tram only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1836,7 +918,7 @@ This appears to meet expectations, with peaks in the SI scores in morning and ev
 
 
 
-```{r Melbourne_CBD_north_all_map_230729_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday 14th October 2023, tram only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230729_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for July 29th 2023, tram only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1858,11 +940,11 @@ ggplot() +
         axis.ticks.y=element_blank()  #remove y axis ticks
   )
 
-si_by_area_and_hour_230729_tram_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 14, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230729_tram_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 25, 2023, 9am to 1am only" )
 
 
 ```
-These results generally meet expectations.  SI scores are in the order of 2/3rds of the Tuesday scores, reflecting the lower service levels on Saturdays.  
+These results generally meet expectations.  SI scores are in the order of 3/5ths of the Tuesday scores, reflecting the lower service levels on Saturdays. However, there is more service late in the evening on Saturday.  
 
 
 ```{r Melbourne_CBD_north_all_map_230730_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, tram only, by hour between 5am and 1am"}
@@ -1877,24 +959,109 @@ map_si_by_area_and_hour_230730_tram$hour_starting <- hm(map_si_by_area_and_hour_
 map_si_by_area_and_hour_230730_tram$hour_starting <- hour(map_si_by_area_and_hour_230730_tram$hour_starting)
 
 #plot only 5am to 1am
-#ggplot() + 
-#  geom_sf(data=map_si_by_area_and_hour_230730_tram %>% filter(hour_starting %in% (5:24)),
-#          aes(fill = SI)) +
-#            facet_wrap(vars(hour_starting)) +
-#  theme(axis.text.x=element_blank(), #remove x axis labels
-#        axis.ticks.x=element_blank(), #remove x axis ticks
-#        axis.text.y=element_blank(),  #remove y axis labels
-#       axis.ticks.y=element_blank()  #remove y axis ticks
-#  )
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730_tram %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+       axis.ticks.y=element_blank()  #remove y axis ticks
+  )
 
-si_by_area_and_hour_230730_tram_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 15, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230730_tram_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 29th 15, 2023, 9am to 1am only" )
 
 
 ```
 
-These results appear to meet expectations, with SI scores for the Sunday a relatively small amount lower than the Saturday scores
+These results appear to meet expectations, with SI scores for the Sunday lower than Saturday in the morning and evening. 
 
 
+### Caulfield
+
+
+The following shows calculated SI values for SA1 zones within the Caulfield SA2 zone for each of the days of interest.
+
+```{r Caulfield_campus_all_map_230725_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - North SA2 zone, SI values for July 25, 2023, by hour between 5am and 1am, tram only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230725_tram <- inner_join(map_areas_of_interest, si_by_area_and_hour_230725_tram)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230725_tram$hour_starting <- hm(map_si_by_area_and_hour_230725_tram$hour_starting)
+map_si_by_area_and_hour_230725_tram$hour_starting <- hour(map_si_by_area_and_hour_230725_tram$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230725_tram %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+This appears to meet expectations, with scores highest close to the Kooyong Rd (centre, N-s) and Balaclava Rd (centre, E-W) tram corridors.
+
+```{r Caulfield_campus_all_map_230729_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield SA2 zone, SI values for July 29, 2023, by hour between 5am and 1am, tram only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230729_tram <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729_tram)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230729_tram$hour_starting <- hm(map_si_by_area_and_hour_230729_tram$hour_starting)
+map_si_by_area_and_hour_230729_tram$hour_starting <- hour(map_si_by_area_and_hour_230729_tram$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230729_tram %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+This appears to meet expectations. Scores are a little lower than for the weekday, but have a similar geographic pattern. 
+
+```{r Caulfield_campus_all_map_230730_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - NOrth SA2 zone, SI values for July 30, 2023, by hour between 5am and 1am, tram only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230730_tram <- inner_join(map_areas_of_interest, si_by_area_and_hour_230730_tram)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230730_tram$hour_starting <- hm(map_si_by_area_and_hour_230730_tram$hour_starting)
+map_si_by_area_and_hour_230730_tram$hour_starting <- hour(map_si_by_area_and_hour_230730_tram$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730_tram %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Likewise, the Sunday scores meet expectations. They are similar to the Saturday scores, but lower in the early morning and late evening. 
 
 
 ## Rail
@@ -1903,7 +1070,7 @@ These results appear to meet expectations, with SI scores for the Sunday a relat
 ### Melbourne CBD - North
 Looking next Melbourne CBD:
 
-```{r Melbourne_CBD_north_all_map_230725_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, rail only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230725_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for July 25th, 2023, rail only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1926,7 +1093,7 @@ ggplot() +
   )
 
 
-si_by_area_and_hour_230725_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 4:25)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 10, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230725_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 4:25)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 25th, 2023, 6am to 11pm only" )
 
 
 ```
@@ -1935,7 +1102,7 @@ This appears to meet expectations, with peaks in the SI scores in morning and ev
 
 
 
-```{r Melbourne_CBD_north_all_map_230729_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday 14th October 2023, rail only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230729_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Saturday July 29th 2023, rail only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1957,14 +1124,14 @@ ggplot() +
         axis.ticks.y=element_blank()  #remove y axis ticks
   )
 
-si_by_area_and_hour_230729_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 4:25)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 14, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230729_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 4:25)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 29th, 2023, 6am to 11pm only" )
 
 
 ```
 These results generally meet expectations.  SI scores are in the order of half of the Tuesday scores, reflecting the lower service levels on Saturdays.  
 
 
-```{r Melbourne_CBD_north_all_map_230730_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, rail only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230730_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday July 30th 2023, rail only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -1976,24 +1143,110 @@ map_si_by_area_and_hour_230730_rail$hour_starting <- hm(map_si_by_area_and_hour_
 map_si_by_area_and_hour_230730_rail$hour_starting <- hour(map_si_by_area_and_hour_230730_rail$hour_starting)
 
 #plot only 5am to 1am
-#ggplot() + 
-#  geom_sf(data=map_si_by_area_and_hour_230730_rail %>% filter(hour_starting %in% (5:24)),
-#          aes(fill = SI)) +
-#            facet_wrap(vars(hour_starting)) +
-#  theme(axis.text.x=element_blank(), #remove x axis labels
-#        axis.ticks.x=element_blank(), #remove x axis ticks
-#        axis.text.y=element_blank(),  #remove y axis labels
-#       axis.ticks.y=element_blank()  #remove y axis ticks
-#  )
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730_rail %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+       axis.ticks.y=element_blank()  #remove y axis ticks
+  )
 
-si_by_area_and_hour_230730_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 15, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230730_rail_wider %>% filter(area_id == "20604150424") %>% select(1, 5:21)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 30th, 2023, 6am to 11pm only" )
 
 
 ```
 
-These results appear to meet expectations, with SI scores for the Sunday similar to the Saturday scores
+These results appear to meet expectations, with SI scores for the Sunday similar to the Saturday scores, only with less service in the morning and late evenings. 
 
 
+### Caulfield
+
+
+The following shows calculated SI values for SA1 zones within the Caulfield SA2 zone for each of the days of interest.
+
+```{r Caulfield_campus_all_map_230725_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - NOrh SA2 zone, SI values for July 25, 2023, by hour between 5am and 1am, rail only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230725_rail <- inner_join(map_areas_of_interest, si_by_area_and_hour_230725_rail)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230725_rail$hour_starting <- hm(map_si_by_area_and_hour_230725_rail$hour_starting)
+map_si_by_area_and_hour_230725_rail$hour_starting <- hour(map_si_by_area_and_hour_230725_rail$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230725_rail %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+These scores appear to meet expectations, with scores only reported for SA1 zones close to railway lines (Sandringham line in the west, Malver and Caulfield stations in the north).
+
+
+```{r Caulfield_campus_all_map_230729_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - NOrth SA2 zone, SI values for July 29, 2023, by hour between 5am and 1am, rail only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230729_rail <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729_rail)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230729_rail$hour_starting <- hm(map_si_by_area_and_hour_230729_rail$hour_starting)
+map_si_by_area_and_hour_230729_rail$hour_starting <- hour(map_si_by_area_and_hour_230729_rail$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230729_rail %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Saturday scores are roughly 3/5ths those of the weekday, again meeting expectations.  
+
+```{r Caulfield_campus_all_map_230730_rail, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - North SA2 zone, SI values for July 30, 2023, by hour between 5am and 1am, rail only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230730_rail <- inner_join(map_areas_of_interest, si_by_area_and_hour_230730_rail)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230730_rail$hour_starting <- hm(map_si_by_area_and_hour_230730_rail$hour_starting)
+map_si_by_area_and_hour_230730_rail$hour_starting <- hour(map_si_by_area_and_hour_230730_rail$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730_rail %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Sunday scores are again simlar to Saturday, although lower in the early morning and late evening, again meeting expectations. 
 
 ## Bus
 ### Lang Lang
@@ -2001,105 +1254,19 @@ These results appear to meet expectations, with SI scores for the Sunday similar
 Extracting SI score results for SA1 21201154812 for just the buss results in:
 ```{r Lang_lang_results_bus_2, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
-si_by_area_and_hour_230725_bus_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for October 10, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230725_bus_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 25, 2023, 6am to 11pm only" )
 
 
 ```
 
-This matches the pattern that was found when testing the gtfssupplyindex package, with a small amount of service throughout the day. 
-
-
-### Clayton
-
-The following shows calculated SI values for SA1 zones within the Clayton (North) - Notting Hill SA2 zone.  
-
-```{r Clayton_campus_all_map_230725_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 10, 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_230725_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230725_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_230725_bus$hour_starting <- hm(map_si_by_area_and_hour_230725_bus$hour_starting)
-map_si_by_area_and_hour_230725_bus$hour_starting <- hour(map_si_by_area_and_hour_230725_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_230725_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-These results appear to largely match expectations. The highest SI scores are generally in the SA1 zones that are closest to the bus interchange at Monash University (south-west area of the SA2 area). 
-
-
-```{r Clayton_campus_all_map_230729_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 14, 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_230729_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_230729_bus$hour_starting <- hm(map_si_by_area_and_hour_230729_bus$hour_starting)
-map_si_by_area_and_hour_230729_bus$hour_starting <- hour(map_si_by_area_and_hour_230729_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_230729_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-The Saturday scores meet expectations, being in the order of half those of Tuesday and following a similar geographic pattern. 
-
-
-```{r Clayton_campus_all_map_230730_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for October 15, 2023, bus only, by hour between 5am and 1am"}
-
-map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
-
-#Join SI to map data
-map_si_by_area_and_hour_230730_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230730_bus)
-
-#convert hour starting to numeric
-map_si_by_area_and_hour_230730_bus$hour_starting <- hm(map_si_by_area_and_hour_230730_bus$hour_starting)
-map_si_by_area_and_hour_230730_bus$hour_starting <- hour(map_si_by_area_and_hour_230730_bus$hour_starting)
-
-#plot only 5am to 1am
-ggplot() + 
-  geom_sf(data=map_si_by_area_and_hour_230730_bus %>% filter(hour_starting %in% (5:24)),
-          aes(fill = SI)) +
-            facet_wrap(vars(hour_starting)) +
-  theme(axis.text.x=element_blank(), #remove x axis labels
-        axis.ticks.x=element_blank(), #remove x axis ticks
-        axis.text.y=element_blank(),  #remove y axis labels
-        axis.ticks.y=element_blank()  #remove y axis ticks
-  )
-
-
-```
-
-The Sunday scores scores are slightly lower than for Saturday, which is consistent with expectations.  
+This matches the pattern shown above in the total (all modes) results) with a small amount of service throughout the day. 
 
 
 
 ### Melbourne CBD - North
 Looking next Melbourne CBD:
 
-```{r Melbourne_CBD_north_all_map_230725_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for October 10, 2023, bus only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230725_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for July 25, 2023, bus only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -2122,7 +1289,7 @@ ggplot() +
   )
 
 
-si_by_area_and_hour_230725_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 10, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230725_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 25, 2023, 6am to 11pm only" )
 
 
 ```
@@ -2153,14 +1320,14 @@ ggplot() +
         axis.ticks.y=element_blank()  #remove y axis ticks
   )
 
-si_by_area_and_hour_230729_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 14, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230729_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 29th, 2023, 6am to 11pm only" )
 
 
 ```
-These results generally meet expectations.  SI scores are in the order of half of the Tuesday scores, reflecting the lower service levels on Saturdays.  
+These results generally meet expectations.  SI scores are in the order of 1/2 of the Tuesday scores, reflecting the lower service levels on Saturdays.  
 
 
-```{r Melbourne_CBD_north_all_map_230730_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 15th October 2023, bus only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_230730_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for Sunday 30th July, 2023, bus only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -2182,30 +1349,194 @@ ggplot() +
        axis.ticks.y=element_blank()  #remove y axis ticks
   )
 
-si_by_area_and_hour_230730_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for October 15, 2023, 6am to 11pm only" )
+si_by_area_and_hour_230730_bus_wider %>% filter(area_id == "20604150424") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Melbourne CBD SA1 zone 20604150424 (RMIT and State Library), hourly SI values for July 30th, 2023, 6am to 11pm only" )
 
 
 ```
 
-These results DO NOT meet expectations. The scores are much lower, being less than 5 percent of the Saturday scores.  Is this an error in the calculations? 
-
-Sunday bus services in the CBD are generally much less frequent than any other time in the week, but this appears to be too much of a difference.  
-
-There were some strike actions by bus drivers around this time, which might account for dramatic reductions in the timetabled services.  However, these results still surprise me, so it will be worth investigating further by looking at some other Sunday. 
+These results meet expectations. The scores are roughly three quarters of the Saturday scores, with almost no services at all before 7am.  
 
 
+### Caulfield 
+
+The following shows calculated SI values for SA1 zones within the Caulfield SA2 zone for each of the days of interest.
+
+```{r Caulfield_campus_all_map_230725_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - NOrh SA2 zone, SI values for July 25, 2023, by hour between 5am and 1am, bus only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230725_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230725_bus)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230725_bus$hour_starting <- hm(map_si_by_area_and_hour_230725_bus$hour_starting)
+map_si_by_area_and_hour_230725_bus$hour_starting <- hour(map_si_by_area_and_hour_230725_bus$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230725_bus %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+Results appear to generally match the greographic distribution of bus routes in the area^[See https://www.ptv.vic.gov.au/assets/PTV-default-site/more/maps/Local-area-maps/Metropolitan/16_Glen-Eira_LAM_September-2021.pdf].  
+
+```{r Caulfield_campus_all_map_230729_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - NOrth SA2 zone, SI values for July 29, 2023, by hour between 5am and 1am, bus only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230729_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729_bus)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230729_bus$hour_starting <- hm(map_si_by_area_and_hour_230729_bus$hour_starting)
+map_si_by_area_and_hour_230729_bus$hour_starting <- hour(map_si_by_area_and_hour_230729_bus$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230729_bus %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Saturday scores are genearlly lower than the weekday, which meets expectations. 
+
+```{r Caulfield_campus_all_map_230730_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Caulfield - North SA2 zone, SI values for July 30, 2023, by hour between 5am and 1am, bus only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Caulfield - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230730_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230730_bus)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230730_bus$hour_starting <- hm(map_si_by_area_and_hour_230730_bus$hour_starting)
+map_si_by_area_and_hour_230730_bus$hour_starting <- hour(map_si_by_area_and_hour_230730_bus$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730_bus %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+Again, Suday scores are a bit lower than the Saruday scores, especially in the early morning. This meets expectations.  
+
+### Clayton
+
+
+The following shows calculated SI values for SA1 zones within the Clayton (North) - Notting Hill SA2 zone for each of the days of interest.
+
+```{r Clayton_campus_all_map_230725_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for July 25, 2023, by hour between 5am and 1am, bus only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230725_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230725_bus)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230725_bus$hour_starting <- hm(map_si_by_area_and_hour_230725_bus$hour_starting)
+map_si_by_area_and_hour_230725_bus$hour_starting <- hour(map_si_by_area_and_hour_230725_bus$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230725_bus %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+
+```{r Clayton_campus_all_map_230729_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for July 29, 2023, by hour between 5am and 1am, bus only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230729_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729_bus)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230729_bus$hour_starting <- hm(map_si_by_area_and_hour_230729_bus$hour_starting)
+map_si_by_area_and_hour_230729_bus$hour_starting <- hour(map_si_by_area_and_hour_230729_bus$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230729_bus %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+
+```{r Clayton_campus_all_map_230730_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Clayton (North) - NOtting Hill SA2 zone, SI values for July 30, 2023, by hour between 5am and 1am, bus only"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Clayton (North) - Notting Hill") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230730_bus <- inner_join(map_areas_of_interest, si_by_area_and_hour_230730_bus)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230730_bus$hour_starting <- hm(map_si_by_area_and_hour_230730_bus$hour_starting)
+map_si_by_area_and_hour_230730_bus$hour_starting <- hour(map_si_by_area_and_hour_230730_bus$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730_bus %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+
+Again, these scores all appear to meet expectations. 
 
 
 
 # Discussion and conclusions
 
-SI scores have been calculated for each hour on Tuesday 10th, Saturday 14th and Sunday 15th of October, 2023, for all SA1 2021 zones within Greater Melbourne. These calculations have been done using the new gtfssupplyindex R package, and results generally appear to meet expectations.  More detailed testing of the code and hand calculation to check results has been reported in the documentation for the package on github [@gtfssupplyindex_github], although there is further work to be done there.  
+SI scores have been calculated for each hour on Tuesday 24th, Saturday 29th and Sunday 30th July, for all SA1 2021 zones within Greater Melbourne. Unlike the scores obtained for early October 2023, the July scores do not appear to have been impacted by any reduction of bus services on the Sunday^[Potentially relating to a strike.]
+
+These calculations have been done using the new gtfssupplyindex R package, and results generally appear to meet expectations.  More detailed testing of the code and hand calculation to check results has been reported in the documentation for the package on github [@gtfssupplyindex_github], although there is further work to be done there.  
 
 Calculation speed is much improved from previous efforts (in mid-2023)! The three days of calculations ran overnight, and were completed in the morning. 
 
-Next steps might involve further development of the gtfssupplyindex package. Further exploration of the SA1 scores for Greater Melbourne that have been calculated here might also be undertaken, or further dates
-
-
+Next steps might involve further development of the gtfssupplyindex package. Further exploration of the SA1 scores for Greater Melbourne that have been calculated here might also be undertaken, or further dates. 
 
 
 # References {#references }

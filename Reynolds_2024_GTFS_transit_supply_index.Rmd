@@ -2321,12 +2321,6 @@ SI score results for SA1 21201154812 in Lang Lang are shown in the following tab
 si_by_area_and_hour_230808_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for 230808, 6am to 11pm only" )
 
 
-si_by_area_and_hour_230808_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 29, 2023, 6am to 11pm only" )
-
-
-
-si_by_area_and_hour_230808_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 30, 2023, 6am to 11pm only" )
-
 ```
 
 This appears to largely align with the timetable^[https://www.vline.com.au/getattachment/44615b59-182d-456a-a25d-57b25de3d88b/Yarram-Melbourne-(via-Leongatha-Koo-Wee-Rup)] and meets expectations.  
@@ -2786,16 +2780,9 @@ These values meet expectations.  Bus scores are highest along the Queen Street c
 
 SI score results for SA1 21201154812 in Lang Lang are shown in the following tables:
   
-  ```{r Lang_lang_results_210810, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
+```{r Lang_lang_results_210810, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
 si_by_area_and_hour_210810_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for 210810, 6am to 11pm only" )
-
-
-si_by_area_and_hour_210810_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 29, 2023, 6am to 11pm only" )
-
-
-
-si_by_area_and_hour_210810_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 30, 2023, 6am to 11pm only" )
 
 ```
 
@@ -2901,7 +2888,7 @@ Looking at the scores for trams only:
   
   
   
-  ```{r Melbourne_CBD_north_all_map_210810_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 210810, tram only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_210810_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 210810, tram only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -3037,7 +3024,7 @@ These scores appear to meet expectations, with scores only reported for SA1 zone
 ### Lang Lang
 
 Extracting SI score results for SA1 21201154812 for just the buss results in:
-  ```{r Lang_lang_results_bus_210810, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
+```{r Lang_lang_results_bus_210810, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
 si_by_area_and_hour_210810_bus_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for 210810, 6am to 11pm only" )
 
@@ -3050,7 +3037,7 @@ This matches the pattern shown above in the total (all modes) results) with a sm
 ### Melbourne CBD - North
 Looking next Melbourne CBD:
   
-  ```{r Melbourne_CBD_north_all_map_210810_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 210810, bus only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_210810_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 210810, bus only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -3257,16 +3244,10 @@ These values meet expectations.  Bus scores are highest along the Queen Street c
 
 SI score results for SA1 21201154812 in Lang Lang are shown in the following tables:
   
-  ```{r Lang_lang_results_200811, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
+```{r Lang_lang_results_200811, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
 si_by_area_and_hour_200811_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for 200811, 6am to 11pm only" )
 
-
-si_by_area_and_hour_200811_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 29, 2023, 6am to 11pm only" )
-
-
-
-si_by_area_and_hour_200811_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 30, 2023, 6am to 11pm only" )
 
 ```
 
@@ -3368,11 +3349,11 @@ These results appear to largely match expectations.  SI values are much lower th
 Looking at the scores for trams only:
   
   
-  ### Melbourne CBD - North
+### Melbourne CBD - North
   
   
   
-  ```{r Melbourne_CBD_north_all_map_200811_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 200811, tram only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_200811_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 200811, tram only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -3508,7 +3489,8 @@ These scores appear to meet expectations, with scores only reported for SA1 zone
 ### Lang Lang
 
 Extracting SI score results for SA1 21201154812 for just the buss results in:
-  ```{r Lang_lang_results_bus_200811, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
+
+```{r Lang_lang_results_bus_200811, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
 si_by_area_and_hour_200811_bus_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for 200811, 6am to 11pm only" )
 
@@ -3521,7 +3503,7 @@ This matches the pattern shown above in the total (all modes) results) with a sm
 ### Melbourne CBD - North
 Looking next Melbourne CBD:
   
-  ```{r Melbourne_CBD_north_all_map_200811_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 200811, bus only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_200811_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 200811, bus only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -3727,16 +3709,11 @@ These values meet expectations.  Bus scores are highest along the Queen Street c
 
 SI score results for SA1 21201154812 in Lang Lang are shown in the following tables:
   
-  ```{r Lang_lang_results_190813, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
+```{r Lang_lang_results_190813, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
 si_by_area_and_hour_190813_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for 190813, 6am to 11pm only" )
 
 
-si_by_area_and_hour_190813_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 29, 2023, 6am to 11pm only" )
-
-
-
-si_by_area_and_hour_190813_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for July 30, 2023, 6am to 11pm only" )
 
 ```
 
@@ -3838,11 +3815,11 @@ These results appear to largely match expectations.  SI values are much lower th
 Looking at the scores for trams only:
   
   
-  ### Melbourne CBD - North
+### Melbourne CBD - North
   
   
   
-  ```{r Melbourne_CBD_north_all_map_190813_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 190813, tram only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_190813_tram, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 190813, tram only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -3978,7 +3955,7 @@ These scores appear to meet expectations, with scores only reported for SA1 zone
 ### Lang Lang
 
 Extracting SI score results for SA1 21201154812 for just the buss results in:
-  ```{r Lang_lang_results_bus_190813, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
+```{r Lang_lang_results_bus_190813, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE}
 
 si_by_area_and_hour_190813_bus_wider %>% filter(area_id == "21201154812") %>% select(1, 8:24)  %>% adorn_rounding(digits = 2) %>% kable(caption = "Victorian GTFS and Lang Lang SA1 zone 21201154812, hourly SI values for 190813, 6am to 11pm only" )
 
@@ -3991,7 +3968,7 @@ This matches the pattern shown above in the total (all modes) results) with a sm
 ### Melbourne CBD - North
 Looking next Melbourne CBD:
   
-  ```{r Melbourne_CBD_north_all_map_190813_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 190813, bus only, by hour between 5am and 1am"}
+```{r Melbourne_CBD_north_all_map_190813_bus, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Melbourne CBD - North SA2 zone, SI values for 190813, bus only, by hour between 5am and 1am"}
 
 map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa2_name_2021 == "Melbourne CBD - North") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
 
@@ -4086,16 +4063,15 @@ Again, these scores all appear to meet expectations.
 
 # Discussion and conclusions
 
-SI scores have been calculated for each hour on Tuesday 24th, Saturday 29th and Sunday 30th July, for all SA1 2021 zones within Greater Melbourne. Unlike the scores obtained for early October 2023, the July scores do not appear to have been impacted by any reduction of bus services on the Sunday^[Potentially relating to a strike.]
+SI scores have been calculated for each hour on Tuesday 24th, Saturday 29th and Sunday 30th July, for all SA1 2021 zones within Greater Melbourne. These scores match expectations. Unlike the scores obtained for early October 2023 (previous versions of this note), the July scores do not appear to have been impacted by any reduction of bus services on the Sunday^[Potentially relating to a strike.] 
+
+Scores have also been calculated for the second Tuesday in August across 2019-2023. These scores also match expectations. 
 
 These calculations have been done using the new gtfssupplyindex R package, and results generally appear to meet expectations.  More detailed testing of the code and hand calculation to check results has been reported in the documentation for the package on github [@gtfssupplyindex_github], although there is further work to be done there.  
 
-Calculation speed is much improved from previous efforts (in mid-2023)! The three days of calculations ran overnight, and were completed in the morning. 
+Calculation speed is much improved from previous efforts (in mid-2023)! Calculations ran over a few days. 
 
 Next steps might involve further development of the gtfssupplyindex package. Further exploration of the SA1 scores for Greater Melbourne that have been calculated here might also be undertaken, or further dates. 
-
-
-# References {#references }
 
 
 ```{r, include=FALSE}

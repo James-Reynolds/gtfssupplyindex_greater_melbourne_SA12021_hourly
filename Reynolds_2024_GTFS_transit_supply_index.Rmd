@@ -1554,6 +1554,86 @@ ggplot() +
 Again, Sunday scores are slightly lower than Saturday scores, which meets expectations. 
 
 
+
+### Doncaster
+
+```{r Doncaster_all_map_230725, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Manningham - West SA3 zone, SI values for July 25, 2023, by hour between 5am and 1am"}
+
+map_areas_of_interest <- load_areas_of_interest(absmapsdata::sa12021 %>% filter(sa3_name_2021 == "Manningham - West") %>% select(sa1_code_2021),  area_id_field = "sa1_code_2021")
+
+#Join SI to map data
+map_si_by_area_and_hour_230725 <- inner_join(map_areas_of_interest, si_by_area_and_hour_230725)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230725$hour_starting <- hm(map_si_by_area_and_hour_230725$hour_starting)
+map_si_by_area_and_hour_230725$hour_starting <- hour(map_si_by_area_and_hour_230725$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230725 %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+```
+
+
+```{r Doncaster_all_map_230729, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Manningham - West SA3 zone, SI values for Saturday July 29th 2023, by hour between 5am and 1am"}
+
+#Join SI to map data
+map_si_by_area_and_hour_230729 <- inner_join(map_areas_of_interest, si_by_area_and_hour_230729)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230729$hour_starting <- hm(map_si_by_area_and_hour_230729$hour_starting)
+map_si_by_area_and_hour_230729$hour_starting <- hour(map_si_by_area_and_hour_230729$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230729 %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+```
+These results generally meet expectations.  SI scores are in the order of half of the Tuesday scores, reflecting the lower service levels on Saturdays.  
+
+
+```{r Doncaster_all_map_230730_2, echo = FALSE, warning=FALSE, message=FALSE, cache=TRUE, fig.fullwidth = TRUE, fig.cap="Victorian GTFS and SA1 zones within the Manningham - West SA3 zone, SI values for Sunday July 30th 2023, by hour between 5am and 1am"}
+
+#Join SI to map data
+map_si_by_area_and_hour_230730 <- inner_join(map_areas_of_interest, si_by_area_and_hour_230730)
+
+#convert hour starting to numeric
+map_si_by_area_and_hour_230730$hour_starting <- hm(map_si_by_area_and_hour_230730$hour_starting)
+map_si_by_area_and_hour_230730$hour_starting <- hour(map_si_by_area_and_hour_230730$hour_starting)
+
+#plot only 5am to 1am
+ggplot() + 
+  geom_sf(data=map_si_by_area_and_hour_230730 %>% filter(hour_starting %in% (5:24)),
+          aes(fill = SI)) +
+            facet_wrap(vars(hour_starting)) +
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        axis.text.y=element_blank(),  #remove y axis labels
+        axis.ticks.y=element_blank()  #remove y axis ticks
+  )
+
+
+```
+
+These results appear to meet expectations, with SI scores for the Sunday a relatively small amount lower than the Saturday scores
+
+
+
+
 ## Tram
 Looking at the scores for trams only:
 

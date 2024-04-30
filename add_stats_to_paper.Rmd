@@ -1,0 +1,169 @@
+---
+title: "Exploring transit service level impacts on the spatial and temporal patterns of
+micromobility travel - statistical tests"
+author: "Dr James Reynolds"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+library(tidyverse)
+library(ggstatsplot)
+library(dplyr)
+library(readxl)
+library(janitor)
+library(prmisc)
+library(papaja)
+
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+```
+
+# Introduction
+
+PTRG is preparing a paper on exploring transit service level impacts on the spatial and temporal patterns of micromobility travel. Analysis has already been completed in R to generate hourly transit Supply Index (SI) values for Greater Melbourne for this project, and a draft paper has been prepared.  The addition of results from statistical tests might enhance the paper, but such analysis is yet to be completed.  
+
+This working note shows the results of the statistical tests to be included in the paper.  
+
+# Methods
+Data was received from Graham in a series of excel files. Rather than attempt to extract the data using R, I'm just going to copy and paste as I go
+
+# Results
+
+## Rail versus non-rail - averages
+
+Figure 8 of the draft paper presents the "Absolute difference in average service level (SI) scores between each trip end of all e-scooter trips and its variation with e-scooter trip length (km) average service".  Comparing these gives:
+
+
+```{r rail_non_rail_average, fig.cap="Distribution of average absolute difference in SI Score for rail and non-rail related trips, grouped by trip distance", fig.fullwidth = TRUE, echo=FALSE, message=FALSE}
+rail_non_rail <- tibble( 
+  distance = c(0, 0.08, 0.27, 0.44, 0.58, 0.71, 0.84, 0.96, 1.09, 1.23, 1.37,
+               1.53, 1.7, 1.9, 2.14, 2.42, 2.77, 3.25, 3.99, 5.41), 
+  rail_related = c(1.60, 4.36, 4.12, 5.10, 6.29, 7.24, 6.79 , 7.76, 8.34, 9.46, 
+                   10.18, 8.98, 10.35, 10.40, 10.34, 12.34, 11.51, 11.84, 10.86, 
+                   12.42), 
+  non_rail_related = c(0.40, 1.30, 2.33, 3.19, 4.18, 4.47, 5.15, 5.80, 6.08,
+                       6.85, 7.31, 7.50, 8.09, 8.64, 9.13, 9.49, 9.80, 10.23, 
+                       9.09, 7.30)
+)
+
+rail_non_rail_longer <- pivot_longer(rail_non_rail, cols = 2:3, 
+                                     values_to = "average_absolute_difference_in_SI", 
+                                     names_to = "type")
+
+ggwithinstats(
+  data = rail_non_rail_longer, 
+  x = type, 
+  y = average_absolute_difference_in_SI,
+  type = "nonparametric", 
+  xlab = "Trip type", 
+  ylab = "Absolute difference in average service level (SI) scores"
+  )
+
+```
+
+As shown above, there is a statistically significant difference in the absolute difference in average service level (SI) scores between each trip end.
+ 
+
+## Rail versus non-rail - all 
+
+The above figure, and Figure 8 in the draft paper, appear to be based on average values around distances of 0, 0.08, 0.27, 0.44, 0.58, etc.  
+
+This section instead examines the entire dataset. THe following compares absolute difference in SI score for all rail and non-rail related trips. 
+
+
+```{r compare_rail_non_rail, fig.cap="Absolute difference in SI Score for rail and non-rail related trips", fig.fullwidth = TRUE, cache = TRUE, echo = FALSE, message=FALSE}
+
+
+all_data <- read_excel("data/ryans_outputs/GVC Analysis B.xlsx")
+all_data <- all_data %>%
+  clean_names()
+  
+all_data$rail_related <- ifelse(all_data$rail == 0, "Non-rail-related" , 
+                            ifelse(all_data$rail == 1,"Rail-related",NA
+                                   )
+                          )
+
+ggbetweenstats(
+  data = all_data,
+  x = rail_related, 
+  y = change_2,
+  xlab = "Trip type", 
+  ylab = "Absolute difference in average service level (SI) scores"
+  )
+
+
+```
+As shown above, there is a statistically significant difference in the absolute difference in SI Score between the rail (mean = 120.1, n = 6,154) and non-rail-related (mean=89.2, n= 92,200) trips (tWelch (6,915.22) = -14.97, p p<0.01, gHedges = -0.20, CI95%=[-0.23, -0.17], nobs = 98,354.
+
+
+```{r scatterplot_all, fig.cap="Absolute difference in SI Score and trip distance, all trips", fig.fullwidth = TRUE, cache = TRUE}
+
+ggscatterstats(
+  data = all_data,
+  x = trip_distance, 
+  y = change_2,
+  xlab = "Trip distance", 
+  ylab = "Absolute difference in average service level (SI) scores"
+  ) 
+
+```
+
+
+```{r scatterplot_non_rail_and_rail_related, fig.cap="Absolute difference in SI Score and trip distance, rail-related and non-rail-related trips", fig.fullwidth = TRUE, cache = TRUE}
+
+grouped_ggscatterstats(
+  data = all_data,
+  x = trip_distance, 
+  y = change_2,
+  grouping.var = rail_related,
+  xlab = "Trip distance", 
+  ylab = "Absolute difference in average service level (SI) scores"
+  )
+
+
+
+```
+
+## Trip volume and density versus SI 
+
+
+```{r scatterplot_trip_volume_SI, fig.cap="Total Trip Volume versus SI score", fig.fullwidth = TRUE, cache = TRUE}
+
+trip_origins_by_sa1 <- all_data$origin_sa1 %>%
+  tabyl()
+
+trip_destination_by_sa1 <- all_data$destination_sa1 %>%
+  tabyl()
+
+trip_volumes <- add_row(
+  trip_origins_by_sa1[,1:2], 
+  trip_destination_by_sa1[,1:2]) 
+
+names(trip_volumes) <- c("sa1_code_2021", "trips")
+
+trip_volumes <- trip_volumes %>%
+  group_by(sa1_code_2021) %>% 
+  summarize(trips = sum(trips))
+
+names(trip_volumes) <- c("sa1_code_2021", "trips")
+
+```
+
+
+
+```{r bib, include=FALSE}
+# create a bib file for the R packages used in this document
+knitr::write_bib(c('base', 'rmarkdown'), file = 'skeleton.bib')
+```

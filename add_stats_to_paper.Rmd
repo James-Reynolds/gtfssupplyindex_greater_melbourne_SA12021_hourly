@@ -46,7 +46,7 @@ Data was received from Graham in a series of excel files. Rather than attempt to
 Figure 8 of the draft paper presents the "Absolute difference in average service level (SI) scores between each trip end of all e-scooter trips and its variation with e-scooter trip length (km) average service".  Comparing these gives:
 
 
-```{r rail_non_rail_average, fig.cap="Distribution of average absolute difference in SI Score for rail and non-rail related trips, grouped by trip distance", fig.fullwidth = TRUE, echo=FALSE, message=FALSE}
+```{r rail_non_rail_average, fig.cap="Distribution of average absolute difference in SI Score for rail and non-rail related trips, grouped by trip distance", fig.fullwidth = FALSE, echo=FALSE, message=FALSE}
 rail_non_rail <- tibble( 
   distance = c(0, 0.08, 0.27, 0.44, 0.58, 0.71, 0.84, 0.96, 1.09, 1.23, 1.37,
                1.53, 1.7, 1.9, 2.14, 2.42, 2.77, 3.25, 3.99, 5.41), 
@@ -83,7 +83,7 @@ The above figure, and Figure 8 in the draft paper, appear to be based on average
 This section instead examines the entire dataset. THe following compares absolute difference in SI score for all rail and non-rail related trips. 
 
 
-```{r compare_rail_non_rail, fig.cap="Absolute difference in SI Score for rail and non-rail related trips", fig.fullwidth = TRUE, cache = TRUE, echo = FALSE, message=FALSE}
+```{r compare_rail_non_rail, fig.cap="Absolute difference in SI Score for rail and non-rail related trips", fig.fullwidth = FALSE, cache = TRUE, echo = FALSE, message=FALSE}
 
 
 all_data <- read_excel("data/ryans_outputs/GVC Analysis B.xlsx")
@@ -108,58 +108,412 @@ ggbetweenstats(
 As shown above, there is a statistically significant difference in the absolute difference in SI Score between the rail (mean = 120.1, n = 6,154) and non-rail-related (mean=89.2, n= 92,200) trips (tWelch (6,915.22) = -14.97, p p<0.01, gHedges = -0.20, CI95%=[-0.23, -0.17], nobs = 98,354.
 
 
-```{r scatterplot_all, fig.cap="Absolute difference in SI Score and trip distance, all trips", fig.fullwidth = TRUE, cache = TRUE}
+```{r scatterplot_all, fig.cap="Absolute difference in SI Score and trip distance, all trips", fig.fullwidth = FALSE, cache = TRUE}
 
 ggscatterstats(
   data = all_data,
   x = trip_distance, 
   y = change_2,
-  xlab = "Trip distance", 
-  ylab = "Absolute difference in average service level (SI) scores"
-  ) 
+  xlab = "Trip distance (metres)", 
+  ylab = "Absolute difference in Service Index (SI) scores",
+  type = "non-parametric"
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
 
 ```
 
+As shown above, there is a statistically significant relationship between trip distance and absolute difference in SI score.  
 
-```{r scatterplot_non_rail_and_rail_related, fig.cap="Absolute difference in SI Score and trip distance, rail-related and non-rail-related trips", fig.fullwidth = TRUE, cache = TRUE}
+
+
+
+```{r scatterplot_non_rail_and_rail_related, fig.cap="Absolute difference in SI Score and trip distance, rail-related and non-rail-related trips", fig.fullwidth = FALSE, cache = TRUE}
 
 grouped_ggscatterstats(
   data = all_data,
   x = trip_distance, 
   y = change_2,
   grouping.var = rail_related,
+  type = "non-parametric",
   xlab = "Trip distance", 
-  ylab = "Absolute difference in average service level (SI) scores"
+  ylab = "Absolute difference in average service level (SI) scores",
+   plotgrid.args = list(nrow = 2, ncol = 1)
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+
+
+```
+
+
+As shown above, there are statistically significant relationships between trip distance and absolute difference in SI score across both the non-rail and rail-related groups. 
+
+
+```{r scatterplot_over_3km, fig.cap="Absolute difference in SI Score and trip distance, trips over 3kms", fig.fullwidth = FALSE, cache = TRUE}
+
+ggscatterstats(
+  data = all_data %>% 
+    filter(trip_distance > 3000),
+  x = trip_distance, 
+  y = change_2,
+  xlab = "Trip distance (metres)", 
+  ylab = "Absolute difference in Service Index (SI) scores",
+  type = "non-parametric"
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+
+grouped_ggscatterstats(
+  data = all_data %>% 
+    filter(trip_distance > 3000),
+  x = trip_distance, 
+  y = change_2,
+  grouping.var = rail_related,
+  type = "non-parametric",
+  xlab = "Trip distance", 
+  ylab = "Absolute difference in Service Index (SI) scores",
+   plotgrid.args = list(nrow = 2, ncol = 1)
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+```
+
+
+As shown above, there is a statistically significant relationship between trip distance and absolute difference in SI score for trips over 3km, with this being a negative relationship. A similarly statistically significant relationship is present for non-rail-related trips over 3km, but not for rail-related trips.  
+
+
+```{r scatterplot_less_than_or_equal_3km, fig.cap="Absolute difference in SI Score and trip distance, trips less than or equal to 3kms", fig.fullwidth = FALSE, cache = TRUE}
+
+
+ggscatterstats(
+  data = all_data %>% 
+    filter(trip_distance <= 3000),
+  x = trip_distance, 
+  y = change_2,
+  xlab = "Trip distance (metres)", 
+  ylab = "Absolute difference in Service Index (SI) scores",
+  type = "non-parametric"
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+
+grouped_ggscatterstats(
+  data = all_data %>% 
+    filter(trip_distance <= 3000),
+  x = trip_distance, 
+  y = change_2,
+  grouping.var = rail_related,
+  type = "non-parametric",
+  xlab = "Trip distance (metres)", 
+  ylab = "Absolute difference in Service Index (SI) scores",
+   plotgrid.args = list(nrow = 2, ncol = 1)
+  )  + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+```
+
+ 
+
+
+
+## Trip volume and density versus SI (Figure 4)
+
+The data behind Figures 4 and 6 appears to be in the "ChoroplethData.xlsx" file. 
+Data is separated by SA1 (rows), however, it is not immediately apparent what 
+each variable (column) relates to.  
+
+By inspection, however, the second column is 
+
+```{r Choropleth_Data_total_trip, fig.cap="Aggregate SI score and Total Trip Volume", fig.fullwidth = FALSE, cache = TRUE}
+ChoroplethData <- read_excel("data/ryans_outputs/ChoroplethData.xlsx")
+
+ChoroplethData <- ChoroplethData %>% clean_names()
+
+ChoroplethData_selected <- ChoroplethData %>%
+  select(sa1_1, origin_2, origin_area_3, aggregate_0_1414_7, total_39, prob_total_64)
+
+names(ChoroplethData_selected) <- c("sa1_code_2021", "Trip Count", "Trip Density", "Aggregate SI score", "Rail Related Trip Count", "Probability of Rail Connection")
+
+
+
+ggscatterstats(
+  data = ChoroplethData_selected,
+  x = `Aggregate SI score`, 
+  y = `Trip Count`,
+  xlab = "Aggregate SI Score", 
+  ylab = "Trip Count",
+  type = "non-parametric"
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+```
+The above indicates that there is a statistically significant relationship between 
+Aggregate SI score and trip count
+
+
+
+
+```{r Choropleth_Data_trip_density, fig.cap="Aggregate SI Score and Total Trip Volume Density", fig.fullwidth = FALSE}
+
+
+ggscatterstats(
+  data = ChoroplethData_selected,
+  x = `Aggregate SI score`, 
+  y = `Trip Density`,
+  xlab = "Aggregate SI Score", 
+  ylab = "Trip Count / Area",
+  type = "non-parametric"
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+```
+The above indicates that there is a statistically significant relationship between 
+Aggregate SI score and Trip Volume Density
+
+## Rail-related trip volume and density versus SI score (draft paper Figure 6)
+
+
+```{r Choropleth_Data_rail_trip, fig.cap="Aggregate SI Score and Rail Related Trip Count", fig.fullwidth = FALSE}
+
+ggscatterstats(
+  data = ChoroplethData_selected,
+  x = `Aggregate SI score`, 
+  y = `Rail Related Trip Count`,
+  xlab = "Aggregate SI Score", 
+  ylab = "Rail Related Trip Count",
+  type = "non-parametric"
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma())
+
+
+```
+The above indicates that there is a statistically significant relationship between 
+Aggregate SI score and trip count
+
+
+
+
+```{r Probability_of_rail_connection, fig.cap="Aggregate SI Score and Probability of Rail Connection", fig.fullwidth = FALSE}
+
+ChoroplethData_selected$`Probability of Rail Connection numeric` <- ChoroplethData_selected$`Probability of Rail Connection` / 100
+ggscatterstats(
+  data = ChoroplethData_selected,
+  x = `Aggregate SI score`, 
+  y = `Probability of Rail Connection numeric`,
+  xlab = "Aggregate SI Score", 
+  ylab = "Probability of Rail Connection",
+  type = "non-parametric"
+  ) + 
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_percent())
+
+
+```
+The above indicates that there is a statistically significant relationship between 
+Aggregate SI score and Trip Volume Density
+
+## More trips starting at stations than ending there (draft paper Section 4.3.1)
+
+```{r trip_ends_versus_starts_at_railway, fig.cap="Comparing rates of station proximity at trip start and end points", fig.fullwidth = FALSE}
+
+start_or_end_at_station <- all_data %>%
+  select(origin_proximity, destination_proximity)
+
+start_or_end_at_station$start_station <- 
+  if_else(is.na(start_or_end_at_station$origin_proximity), "No", "Yes")
+
+start_or_end_at_station$end_station <- 
+  if_else(is.na(start_or_end_at_station$destination_proximity), "No", "Yes")
+
+start_or_end_at_station_counts <- tabyl(start_or_end_at_station, start_station, end_station)
+
+start_or_end_at_station_counts_longer <- pivot_longer(
+  start_or_end_at_station_counts,
+  cols = 2:3, 
+  names_to = "end_station", 
+  values_to = "count")
+
+ggbarstats(
+  data = start_or_end_at_station_counts_longer, 
+  y = start_station, 
+  x = end_station, 
+  counts = count, 
+  paired = TRUE, 
+  label = "both")
+
+
+start_versus_end <- tibble(
+  trip_end = c("Start", "Start", "End", "End"), 
+  station = c("Yes", "No", "Yes", "No"), 
+  count = c(as.numeric(start_or_end_at_station_counts_longer[3,3]) + as.numeric(start_or_end_at_station_counts_longer[4,3]),
+  as.numeric(start_or_end_at_station_counts_longer[1,3]) + as.numeric(start_or_end_at_station_counts_longer[2,3]),
+as.numeric(start_or_end_at_station_counts_longer[2,3]) + 
+  as.numeric(start_or_end_at_station_counts_longer[4,3]),
+as.numeric(start_or_end_at_station_counts_longer[1,3]) + 
+  as.numeric(start_or_end_at_station_counts_longer[3,3])
+)
+)
+
+
+ggbarstats(
+  data = start_versus_end, 
+  x = station, 
+  y = trip_end, 
+  counts = count, 
+  paired = FALSE, 
+  label = "both")
+
+```
+## Share of trips starting and/or ending at a station - weekends versus weekdays (Section 4.3.1)
+
+```{r start_railway_weekends, fig.cap="Share of trips starting at a railway station, by day type", fig.fullwidth = FALSE}
+
+start_or_end_at_station_weekday <- all_data %>%
+  select(origin_proximity, destination_proximity, weekday)
+
+start_or_end_at_station_weekday$start_station <- 
+  if_else(is.na(start_or_end_at_station_weekday$origin_proximity), "No", "Yes")
+
+start_or_end_at_station_weekday$end_station <- 
+  if_else(is.na(start_or_end_at_station_weekday$destination_proximity), "No", "Yes")
+
+start_or_end_at_station_counts_weekday <- tabyl(
+  start_or_end_at_station_weekday %>% filter(
+    weekday == "Weekday"), start_station, end_station)
+
+start_or_end_at_station_counts_weekday$weekday <- "Weekday"
+
+start_or_end_at_station_counts_weekend <- tabyl(
+  start_or_end_at_station_weekday %>% filter(
+    weekday == "Weekend"), start_station, end_station)
+
+start_or_end_at_station_counts_weekend$weekday <- "Weekend"
+
+start_or_end_at_station_counts_weekday <- add_row(
+  start_or_end_at_station_counts_weekday, 
+  start_or_end_at_station_counts_weekend) 
+
+
+start_or_end_at_station_counts_weekday_longer <- pivot_longer(
+  start_or_end_at_station_counts_weekday,
+  cols = 2:3, 
+  names_to = "end_station", 
+  values_to = "count")
+
+##grouped_ggbarstats(
+#  data = start_or_end_at_station_counts_weekday_longer, 
+#  y = start_station, 
+#  x = end_station, 
+#  grouping.var = weekday,
+#  counts = count, 
+#  paired = TRUE, 
+#  plotgrid.args = list(nrow = 2, ncol = 1),
+#  label = "both")
+
+ggbarstats(
+  data = start_or_end_at_station_counts_weekday_longer, 
+  x = start_station, 
+  y = weekday, 
+  counts = count, 
+  label = "both")
+
+
+```
+As shown above, there is a statistically significant relationship between whether a trip starts at a railway station and whether it is a weekday or weekend. 
+
+```{r end_railway_weekends, fig.cap="Share of trips ending at a railway station, by day type", fig.fullwidth = FALSE}
+
+
+ggbarstats(
+  data = start_or_end_at_station_counts_weekday_longer, 
+  x = end_station, 
+  y = weekday, 
+  counts = count, 
+  label = "both")
+
+
+```
+As shown above, there is a statistically significant relationship between whether a trip ends at a railway station and whether it is a weekday or weekend. 
+
+```{r start_and_end_railway_weekends, fig.cap="Share of trips starting and ending at a railway station, by day type", fig.fullwidth = FALSE}
+
+start_or_end_at_station_counts_weekday_longer$start_and_end <- 
+  ifelse(start_or_end_at_station_counts_weekday_longer$start_station == "Yes", 
+         ifelse(start_or_end_at_station_counts_weekday_longer$end_station == "Yes", 
+                "Yes", 
+                "No"), 
+         "No")
+
+ggbarstats(
+  data = start_or_end_at_station_counts_weekday_longer, 
+  x = start_and_end, 
+  y = weekday, 
+  counts = count, 
+  label = "both")
+
+
+```
+As shown above, there is no statistically significant relationship between whether a trip starts and ends at a railway station and whether it is a weekday or weekend. 
+
+## Trips are longer on weekends than weekdays (Draft paper Section 4.3.1)
+
+
+```{r railway_distance_weekends, fig.cap="Distance by day type, rail-related trips", fig.fullwidth = FALSE}
+
+grouped_ggbetweenstats(
+  data = all_data,
+  x = weekday, 
+  y = trip_distance, 
+  grouping.var = rail_related,
+  type = "non-parametric", 
+  plotgrid.args = list(nrow = 2, ncol = 1)
   )
 
 
-
 ```
 
-## Trip volume and density versus SI 
 
+```{r distance_by_weekends, fig.cap="Distance by day type, all trips", fig.fullwidth = FALSE}
 
-```{r scatterplot_trip_volume_SI, fig.cap="Total Trip Volume versus SI score", fig.fullwidth = TRUE, cache = TRUE}
+ggbetweenstats(
+  data = all_data,
+  x = weekday, 
+  y = trip_distance, 
+  type = "non-parametric"
+  )
 
-trip_origins_by_sa1 <- all_data$origin_sa1 %>%
-  tabyl()
-
-trip_destination_by_sa1 <- all_data$destination_sa1 %>%
-  tabyl()
-
-trip_volumes <- add_row(
-  trip_origins_by_sa1[,1:2], 
-  trip_destination_by_sa1[,1:2]) 
-
-names(trip_volumes) <- c("sa1_code_2021", "trips")
-
-trip_volumes <- trip_volumes %>%
-  group_by(sa1_code_2021) %>% 
-  summarize(trips = sum(trips))
-
-names(trip_volumes) <- c("sa1_code_2021", "trips")
 
 ```
+## Rail-related trips are the same length as non-rail-related trips (Draft paper Section 4.3.1)
+
+```{r rail_related_length, fig.cap="Distance by trip type", fig.fullwidth = FALSE}
+
+ggbetweenstats(
+  data = all_data,
+  x = rail_related, 
+  y = trip_distance, 
+  type = "non-parametric"
+  )
+
+
+```
+As shown above, there is no statistically significant difference in trip length between rail-related and non-rail-related trips.
 
 
 

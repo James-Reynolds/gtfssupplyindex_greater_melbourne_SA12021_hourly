@@ -37,7 +37,8 @@ PTRG is preparing a paper on exploring transit service level impacts on the spat
 This working note shows the results of the statistical tests to be included in the paper.  
 
 # Methods
-Data was received from Graham in a series of excel files. Rather than attempt to extract the data using R, I'm just going to copy and paste as I go
+Data was received from Graham in a series of excel files. 
+These are reviewed and processed using the ggstatsplot package[@ggstatsplot2021]. 
 
 # Results
 
@@ -78,12 +79,11 @@ As shown above, there is a statistically significant difference in the absolute 
 
 ## Rail versus non-rail - all 
 
-The above figure, and Figure 8 in the draft paper, appear to be based on average values around distances of 0, 0.08, 0.27, 0.44, 0.58, etc.  
+The above figure, and Figure 8 in the draft paper, appear to be based on average values around distances of 0, 0.08, 0.27, 0.44, 0.58, etc. 
+This section instead examines the entire dataset. The following compares absolute difference in SI score for all rail and non-rail related trips. 
 
-This section instead examines the entire dataset. THe following compares absolute difference in SI score for all rail and non-rail related trips. 
 
-
-```{r compare_rail_non_rail, fig.cap="Absolute difference in SI Score for rail and non-rail related trips", fig.fullwidth = FALSE, cache = TRUE, echo = FALSE, message=FALSE}
+```{r compare_rail_non_rail, fig.cap="Absolute difference in SI Score for rail and non-rail related trips", fig.fullwidth = FALSE, cache = FALSE, echo = FALSE, message=FALSE}
 
 
 all_data <- read_excel("data/ryans_outputs/GVC Analysis B.xlsx")
@@ -105,10 +105,10 @@ ggbetweenstats(
 
 
 ```
-As shown above, there is a statistically significant difference in the absolute difference in SI Score between the rail (mean = 120.1, n = 6,154) and non-rail-related (mean=89.2, n= 92,200) trips (tWelch (6,915.22) = -14.97, p p<0.01, gHedges = -0.20, CI95%=[-0.23, -0.17], nobs = 98,354.
+As shown above, there is a statistically significant difference in the absolute difference in SI Score between the rail and non-rail-related trips.
 
 
-```{r scatterplot_all, fig.cap="Absolute difference in SI Score and trip distance, all trips", fig.fullwidth = FALSE, cache = TRUE}
+```{r scatterplot_all, fig.cap="Absolute difference in SI Score and trip distance, all trips", fig.fullwidth = TRUE, cache = FALSE, echo = FALSE, message = FALSE}
 
 ggscatterstats(
   data = all_data,
@@ -128,7 +128,7 @@ As shown above, there is a statistically significant relationship between trip d
 
 
 
-```{r scatterplot_non_rail_and_rail_related, fig.cap="Absolute difference in SI Score and trip distance, rail-related and non-rail-related trips", fig.fullwidth = FALSE, cache = TRUE}
+```{r scatterplot_non_rail_and_rail_related, fig.cap="Absolute difference in SI Score and trip distance, rail-related and non-rail-related trips", fig.fullwidth = FALSE, cache = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 grouped_ggscatterstats(
   data = all_data,
@@ -152,7 +152,7 @@ grouped_ggscatterstats(
 As shown above, there are statistically significant relationships between trip distance and absolute difference in SI score across both the non-rail and rail-related groups. 
 
 
-```{r scatterplot_over_3km, fig.cap="Absolute difference in SI Score and trip distance, trips over 3kms", fig.fullwidth = FALSE, cache = TRUE}
+```{r scatterplot_over_3km, fig.cap="Absolute difference in SI Score and trip distance, trips over 3kms", fig.fullwidth = TRUE, cache = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 ggscatterstats(
   data = all_data %>% 
@@ -189,7 +189,7 @@ grouped_ggscatterstats(
 As shown above, there is a statistically significant relationship between trip distance and absolute difference in SI score for trips over 3km, with this being a negative relationship. A similarly statistically significant relationship is present for non-rail-related trips over 3km, but not for rail-related trips.  
 
 
-```{r scatterplot_less_than_or_equal_3km, fig.cap="Absolute difference in SI Score and trip distance, trips less than or equal to 3kms", fig.fullwidth = FALSE, cache = TRUE}
+```{r scatterplot_less_than_or_equal_3km, fig.cap="Absolute difference in SI Score and trip distance, trips less than or equal to 3kms", fig.fullwidth = TRUE, cache = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 
 ggscatterstats(
@@ -223,19 +223,16 @@ grouped_ggscatterstats(
 
 ```
 
- 
+ As shown above, there are statistically significant relationships between trip distance and absolutie difference in SI score for trips less than or equal to 3kms, across all trips, non-rail-related trips and rail-related trips. 
 
 
 
 ## Trip volume and density versus SI (Figure 4)
 
 The data behind Figures 4 and 6 appears to be in the "ChoroplethData.xlsx" file. 
-Data is separated by SA1 (rows), however, it is not immediately apparent what 
-each variable (column) relates to.  
+Data is separated by SA1 (rows)
 
-By inspection, however, the second column is 
-
-```{r Choropleth_Data_total_trip, fig.cap="Aggregate SI score and Total Trip Volume", fig.fullwidth = FALSE, cache = TRUE}
+```{r Choropleth_Data_total_trip, fig.cap="Aggregate SI score and Total Trip Volume", fig.fullwidth = FALSE, cache = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 ChoroplethData <- read_excel("data/ryans_outputs/ChoroplethData.xlsx")
 
 ChoroplethData <- ChoroplethData %>% clean_names()
@@ -261,12 +258,12 @@ ggscatterstats(
 
 ```
 The above indicates that there is a statistically significant relationship between 
-Aggregate SI score and trip count
+Aggregate SI score and trip count.
 
 
 
 
-```{r Choropleth_Data_trip_density, fig.cap="Aggregate SI Score and Total Trip Volume Density", fig.fullwidth = FALSE}
+```{r Choropleth_Data_trip_density, fig.cap="Aggregate SI Score and Total Trip Volume Density", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 
 ggscatterstats(
@@ -283,12 +280,12 @@ ggscatterstats(
 
 ```
 The above indicates that there is a statistically significant relationship between 
-Aggregate SI score and Trip Volume Density
+Aggregate SI score and Trip Volume Density.
 
 ## Rail-related trip volume and density versus SI score (draft paper Figure 6)
 
 
-```{r Choropleth_Data_rail_trip, fig.cap="Aggregate SI Score and Rail Related Trip Count", fig.fullwidth = FALSE}
+```{r Choropleth_Data_rail_trip, fig.cap="Aggregate SI Score and Rail Related Trip Count", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 ggscatterstats(
   data = ChoroplethData_selected,
@@ -304,12 +301,12 @@ ggscatterstats(
 
 ```
 The above indicates that there is a statistically significant relationship between 
-Aggregate SI score and trip count
+Aggregate SI score and trip count.
 
 
 
 
-```{r Probability_of_rail_connection, fig.cap="Aggregate SI Score and Probability of Rail Connection", fig.fullwidth = FALSE}
+```{r Probability_of_rail_connection, fig.cap="Aggregate SI Score and Probability of Rail Connection", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 ChoroplethData_selected$`Probability of Rail Connection numeric` <- ChoroplethData_selected$`Probability of Rail Connection` / 100
 ggscatterstats(
@@ -330,7 +327,7 @@ Aggregate SI score and Trip Volume Density
 
 ## More trips starting at stations than ending there (draft paper Section 4.3.1)
 
-```{r trip_ends_versus_starts_at_railway, fig.cap="Comparing rates of station proximity at trip start and end points", fig.fullwidth = FALSE}
+```{r trip_ends_versus_starts_at_railway, fig.cap="Comparing rates of station proximity at trip start and end points", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE }
 
 start_or_end_at_station <- all_data %>%
   select(origin_proximity, destination_proximity)
@@ -380,9 +377,12 @@ ggbarstats(
   label = "both")
 
 ```
+
+The above indicates that there is no statistically significant difference between whether a trip starts at a station or not and whether it ends at a station or not. 
+
 ## Share of trips starting and/or ending at a station - weekends versus weekdays (Section 4.3.1)
 
-```{r start_railway_weekends, fig.cap="Share of trips starting at a railway station, by day type", fig.fullwidth = FALSE}
+```{r start_railway_weekends, fig.cap="Share of trips starting at a railway station, by day type", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 start_or_end_at_station_weekday <- all_data %>%
   select(origin_proximity, destination_proximity, weekday)
@@ -437,7 +437,7 @@ ggbarstats(
 ```
 As shown above, there is a statistically significant relationship between whether a trip starts at a railway station and whether it is a weekday or weekend. 
 
-```{r end_railway_weekends, fig.cap="Share of trips ending at a railway station, by day type", fig.fullwidth = FALSE}
+```{r end_railway_weekends, fig.cap="Share of trips ending at a railway station, by day type", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 
 ggbarstats(
@@ -451,7 +451,7 @@ ggbarstats(
 ```
 As shown above, there is a statistically significant relationship between whether a trip ends at a railway station and whether it is a weekday or weekend. 
 
-```{r start_and_end_railway_weekends, fig.cap="Share of trips starting and ending at a railway station, by day type", fig.fullwidth = FALSE}
+```{r start_and_end_railway_weekends, fig.cap="Share of trips starting and ending at a railway station, by day type", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 start_or_end_at_station_counts_weekday_longer$start_and_end <- 
   ifelse(start_or_end_at_station_counts_weekday_longer$start_station == "Yes", 
@@ -474,7 +474,7 @@ As shown above, there is no statistically significant relationship between wheth
 ## Trips are longer on weekends than weekdays (Draft paper Section 4.3.1)
 
 
-```{r railway_distance_weekends, fig.cap="Distance by day type, rail-related trips", fig.fullwidth = FALSE}
+```{r railway_distance_weekends, fig.cap="Distance by day type, rail-related trips", fig.fullwidth = TRUE, echo = FALSE, message = FALSE, warning = FALSE}
 
 grouped_ggbetweenstats(
   data = all_data,
@@ -487,9 +487,11 @@ grouped_ggbetweenstats(
 
 
 ```
+As shown above, there are statistically significant relationships between trip distance and and whether it is a weekday or weekend across both the non-rail-related and rail-related trip groupings. 
 
 
-```{r distance_by_weekends, fig.cap="Distance by day type, all trips", fig.fullwidth = FALSE}
+
+```{r distance_by_weekends, fig.cap="Distance by day type, all trips", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 ggbetweenstats(
   data = all_data,
@@ -500,9 +502,11 @@ ggbetweenstats(
 
 
 ```
+As shown above, there are also a statistically significant relationship between whether a trip distance and whether it is a weekday or weekend, across all trips
+
 ## Rail-related trips are the same length as non-rail-related trips (Draft paper Section 4.3.1)
 
-```{r rail_related_length, fig.cap="Distance by trip type", fig.fullwidth = FALSE}
+```{r rail_related_length, fig.cap="Distance by trip type", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
 
 ggbetweenstats(
   data = all_data,
@@ -515,9 +519,47 @@ ggbetweenstats(
 ```
 As shown above, there is no statistically significant difference in trip length between rail-related and non-rail-related trips.
 
+## Fishermans Bend stands out (Draft paper Section 4.3.3)
+Fishermans Bend (SA1 area 20605151104) is noted as having a different pattern, especially related to rail-related trips being a higher than might otherwise be expected.  In the below, this is explored further.
+
+
+```{r fishermans_bend, fig.cap="Trip distance, Fishermans Bend vs non-Fishermans bend trips, rail-related trips", fig.fullwidth = TRUE, echo = FALSE, message = FALSE, warning = FALSE}
+all_data$Fishermans <- ifelse(
+  all_data$origin_sa1 == "20605151104",
+  "Fishermans Bend-related trip",
+  ifelse(
+    all_data$destination_sa1 == "20605151104",
+    "Fishermans Bend-related trip",
+    "Not Fishermans Bend-related"))
+                              
+grouped_ggbetweenstats(
+  data = all_data,
+  x = Fishermans,
+  y = trip_distance, 
+  grouping.var = rail_related,
+  type = "non-parametric", 
+  plotgrid.args = list(nrow = 2, ncol = 1)
+)
+
+```
+As shown above, there is a statistically significant relationship trip distance and whether a trip is Fishermans Bend related, for both rail related and non-rail related trips. 
+
+
+```{r fishermans_bend_all_distance, fig.cap="Trip distance, Fishermans Bend vs non-Fishermans bend trips, all trips", fig.fullwidth = FALSE, echo = FALSE, message = FALSE, warning = FALSE}
+
+ggbetweenstats(
+  data = all_data,
+  x = Fishermans,
+  y = trip_distance, 
+  type = "non-parametric"
+)
+
+```
+
+As shown above, there is also a statistically significant relationship trip distance and whether a trip is Fishermans Bend related across all trips. 
 
 
 ```{r bib, include=FALSE}
 # create a bib file for the R packages used in this document
-knitr::write_bib(c('base', 'rmarkdown'), file = 'skeleton.bib')
+knitr::write_bib(c('base', 'rmarkdown', 'ggstatsplot'), file = 'skeleton.bib')
 ```
